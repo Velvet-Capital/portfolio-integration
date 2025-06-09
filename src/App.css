@@ -1,0 +1,230 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+.app-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #646cff;
+}
+
+.wallet-connect {
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.connect-button,
+.disconnect-button,
+button {
+  padding: 0.6em 1.2em;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  color: #ffffff;
+}
+
+.connect-button:hover,
+.disconnect-button:hover,
+button:hover {
+  border-color: #646cff;
+  background-color: #2a2a2a;
+}
+
+.error {
+  color: #ff4444;
+  margin-bottom: 1rem;
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.wallet-info p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #ffffff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+.create-portfolio {
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.create-portfolio h2 {
+  margin: 0 0 1.5rem 0;
+  color: #ffffff;
+}
+
+.create-button {
+  background-color: #646cff !important;
+  color: white !important;
+  font-weight: bold !important;
+  padding: 1rem 2rem !important;
+  font-size: 1.1rem !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.create-button:hover {
+  background-color: #535bf2 !important;
+}
+
+.create-button:disabled {
+  background-color: #4a4a4a !important;
+  cursor: not-allowed !important;
+}
+
+.success {
+  color: #4caf50;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+}
+
+.portfolio-list {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.portfolio-list h3 {
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.portfolio-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.portfolio-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.portfolio-card h4 {
+  color: #646cff;
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+}
+
+.portfolio-details {
+  color: #ffffff;
+}
+
+.portfolio-details p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.portfolio-details span {
+  color: #888;
+  font-weight: 500;
+}
+
+.portfolio-fees,
+.portfolio-settings {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.portfolio-fees p,
+.portfolio-settings p {
+  font-size: 0.85rem;
+}
+
+.error {
+  color: #ff4444;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+  margin: 1rem 0;
+}
