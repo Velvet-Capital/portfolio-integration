@@ -1,0 +1,131 @@
+.wbnb-approval {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.input-group {
+  position: relative;
+  width: 100%;
+}
+
+.wbnb-input {
+  width: 100%;
+  padding: 0.75rem;
+  padding-right: 4rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.wbnb-input:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.input-suffix {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.approve-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.approve-button:hover {
+  background-color: #357abd;
+}
+
+.approve-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.notification {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #495057;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.error {
+  width: 100%;
+  padding: 1rem;
+  background-color: #fff3f3;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: center;
+  color: #d32f2f;
+}
+
+.success {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f1f8e9;
+  border: 1px solid #c5e1a5;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: center;
+  color: #2e7d32;
+}
+
+.balance-warning {
+  width: 100%;
+  padding: 1rem;
+  background-color: #fff3e0;
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  margin-top: 1rem;
+  text-align: center;
+  color: #ef6c00;
+}
+
+.balance-warning button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.balance-warning button:hover {
+  background-color: #f57c00;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 
