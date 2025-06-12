@@ -13,7 +13,6 @@ import {
 import WBNBApproval from './WBNBApproval';
 import ThenaInitialization from './ThenaInitialization';
 import CreatePosition from './CreatePosition';
-import DepositEBNB from './DepositEBNB';
 import DepositWBNB from './DepositWBNB';
 import RebalancePortfolio from './RebalancePortfolio';
 import WithdrawWBNB from './WithdrawWBNB';
