@@ -1,0 +1,9 @@
+.user-address {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  word-break: break-all;
+} 

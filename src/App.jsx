@@ -29,7 +29,7 @@ function App() {
     <MetaMaskProvider>
       <div className="app-container">
         <div className="header">
-          <h1>My DApp</h1>
+          <h1>Portfolio Test</h1>
           <WalletConnect />
         </div>
         <div className="card">

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
-import { 
+import {
   PORTFOLIO_FACTORY_ADDRESS,
   TREASURY_ADDRESS,
   THENA_PROTOCOL_HASH,
@@ -10,14 +10,23 @@ import {
   PORTFOLIO_FACTORY_ABI,
   API_URL
 } from '../config/contracts';
+import WBNBApproval from './WBNBApproval';
+import ThenaInitialization from './ThenaInitialization';
+import CreatePosition from './CreatePosition';
+import DepositEBNB from './DepositEBNB';
+import DepositWBNB from './DepositWBNB';
+import RebalancePortfolio from './RebalancePortfolio';
+import WithdrawWBNB from './WithdrawWBNB';
 
 const CreatePortfolio = () => {
   const { account, connect } = useMetaMask();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [portfolioAddress, setPortfolioAddress] = useState(null);
   const [portfolios, setPortfolios] = useState([]);
+  const [portfolio, setPortfolio] = useState(null);
+  const [remountKey, setRemountKey] = useState(0);
 
   const fetchUserPortfolios = async () => {
     if (!account) return;
@@ -179,7 +188,7 @@ const CreatePortfolio = () => {
       setPortfolioAddress(portfolioInfo.portfolio);
       // Refresh portfolios list
       await fetchUserPortfolios();
-      
+
       console.log('Portfolio created successfully:', {
         portfolioInfo,
         portfolioId,
@@ -248,27 +257,52 @@ const CreatePortfolio = () => {
     }
   };
 
+  const loadPortfolio = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('Fetching portfolios for account:', account);
+      const response = await fetch(`${API_URL}/portfolios/user/${account}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("data", data);
+      setPortfolios(data);
+      console.log("portfolios", portfolios);
+    } catch (err) {
+      setError(err.message || 'Failed to load portfolio data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    loadPortfolio();
+  }, []);
+
   return (
-    <div className="create-portfolio">
+    <div className="create-portfolio" key={remountKey}>
       <h2>Create New Portfolio</h2>
       {!account ? (
         <button onClick={connect}>Connect Wallet</button>
       ) : (
-        <button 
-          onClick={createPortfolio} 
+        <button
+          onClick={createPortfolio}
           disabled={loading}
         >
           {loading ? 'Creating Portfolio...' : 'Create Portfolio'}
         </button>
       )}
-      
+
       {error && (
         <div className="error">
           <p>{error}</p>
           <button onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
-      
+
       {success && portfolioAddress && (
         <div className="success">
           <p>Portfolio created successfully!</p>
@@ -279,12 +313,29 @@ const CreatePortfolio = () => {
       {portfolios.length > 0 && (
         <div className="portfolios-list">
           <h3>Your Portfolios</h3>
+          <p className="user-address">Connected Address: {account}</p>
           <div className="portfolios-grid">
             {portfolios.map((portfolio) => (
               <div key={portfolio._id} className="portfolio-card">
-                <h4>{portfolio.name} ({portfolio.symbol})</h4>
+                <h3>{portfolio.name}</h3>
                 <p>Address: {portfolio.portfolioAddress}</p>
                 <p>Created: {new Date(portfolio.createdAt).toLocaleDateString()}</p>
+
+                {!portfolio.initializedThena && (
+                  <ThenaInitialization
+                    portfolioAddress={portfolio.portfolioAddress}
+                    loadPortfolio={loadPortfolio}
+                  />
+                )}
+                {portfolio.initializedThena && (
+                  <>
+                    <CreatePosition portfolioAddress={portfolio.portfolioAddress} loadPortfolio={loadPortfolio} />
+                    <WBNBApproval portfolio={portfolio} />
+                    <DepositWBNB portfolio={portfolio} />
+                    <RebalancePortfolio portfolio={portfolio} />
+                    <WithdrawWBNB portfolio={portfolio} />
+                  </>
+                )}
               </div>
             ))}
           </div>
