@@ -6,4 +6,90 @@
   background-color: #f5f5f5;
   border-radius: 4px;
   word-break: break-all;
+}
+
+.init-token {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.init-token h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.init-token .input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.init-token input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.init-token input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.init-token button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.init-token button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.init-token button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.init-token .error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.init-token .success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.init-token .error button,
+.init-token .success button {
+  background-color: transparent;
+  color: inherit;
+  border: 1px solid currentColor;
+  padding: 0.25rem 0.5rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.init-token .error button:hover,
+.init-token .success button:hover {
+  background-color: currentColor;
+  color: white;
 } 

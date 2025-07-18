@@ -8,6 +8,7 @@ import {
   DEFAULT_FEES,
   DEFAULT_PORTFOLIO,
   PORTFOLIO_FACTORY_ABI,
+  PORTFOLIO_ABI,
   API_URL
 } from '../config/contracts';
 import WBNBApproval from './WBNBApproval';
@@ -16,6 +17,8 @@ import CreatePosition from './CreatePosition';
 import DepositWBNB from './DepositWBNB';
 import RebalancePortfolio from './RebalancePortfolio';
 import WithdrawWBNB from './WithdrawWBNB';
+import InitToken from './InitToken';
+import './CreatePortfolio.css';
 
 const CreatePortfolio = () => {
   const { account, connect } = useMetaMask();
@@ -329,6 +332,7 @@ const CreatePortfolio = () => {
                 {portfolio.initializedThena && (
                   <>
                     <CreatePosition portfolioAddress={portfolio.portfolioAddress} loadPortfolio={loadPortfolio} />
+                    <InitToken portfolioAddress={portfolio.portfolioAddress} loadPortfolio={loadPortfolio} />
                     <WBNBApproval portfolio={portfolio} />
                     <DepositWBNB portfolio={portfolio} />
                     <RebalancePortfolio portfolio={portfolio} />
