@@ -24,6 +24,7 @@ const DepositWBNB = ({ portfolio }) => {
   const [success, setSuccess] = useState(false);
   const [notification, setNotification] = useState(null);
   const [amount, setAmount] = useState('');
+  const [tokenAddress, setTokenAddress] = useState('');
 
   const toDeadline = (expiration) => {
     return Math.floor((Date.now() + expiration) / 1000);
@@ -135,6 +136,8 @@ const DepositWBNB = ({ portfolio }) => {
         signature
       );
 
+    
+
       setNotification('Waiting for deposit transaction to be mined...');
       await depositTx.wait();
       
@@ -153,20 +156,29 @@ const DepositWBNB = ({ portfolio }) => {
       <div className="input-group">
         <input
           type="text"
-          value={amount}
-          onChange={handleAmountChange}
-          placeholder="Enter WBNB amount"
+          value={tokenAddress}
+          onChange={(e) => setTokenAddress(e.target.value)}
+          placeholder="Enter token address"
           className="wbnb-input"
         />
-        <span className="input-suffix">WBNB</span>
+      </div>
+      <div className="input-group">
+        <input
+          type="text"
+          value={amount}
+          onChange={handleAmountChange}
+          placeholder="Enter token amount"
+          className="wbnb-input"
+        />
+        <span className="input-suffix">Tokens</span>
       </div>
 
       <button
         onClick={handleDeposit}
-        disabled={loading || !amount}
+        disabled={loading || !amount || !tokenAddress}
         className="deposit-button"
       >
-        {loading ? 'Processing Deposit...' : 'Deposit WBNB'}
+        {loading ? 'Processing Deposit...' : 'Deposit Tokens'}
       </button>
       
       {notification && (
@@ -184,7 +196,7 @@ const DepositWBNB = ({ portfolio }) => {
       
       {success && (
         <div className="success">
-          <p>Successfully deposited {amount} WBNB!</p>
+          <p>Successfully deposited {amount} tokens!</p>
         </div>
       )}
     </div>
