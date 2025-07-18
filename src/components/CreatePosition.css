@@ -1,0 +1,72 @@
+.create-position {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.token-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.amount-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.create-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.create-button:hover {
+    background-color: #45a049;
+}
+
+.create-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.error {
+    color: #ff0000;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ff0000;
+    border-radius: 4px;
+    background-color: #fff5f5;
+}
+
+.success {
+    color: #4CAF50;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #4CAF50;
+    border-radius: 4px;
+    background-color: #f0fff0;
+}
+
+.notification {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #2196F3;
+    border-radius: 4px;
+    background-color: #f0f8ff;
+} 

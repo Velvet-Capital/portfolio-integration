@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
-import {
+import { 
     THENA_PROTOCOL_HASH,
     ZERO_ADDRESS,
     API_URL,
     PORTFOLIO_ABI,
     ASSET_MANAGEMENT_CONFIG_ABI,
-    POSITION_MANAGER_ALGEBRA_ABI,
+    POSITION_MANAGER_ALGEBRA_ABI
 } from '../config/contracts';
+import './CreatePosition.css';
 
 const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"; // BSC Mainnet
 const ETH_ADDRESS = "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"; // BSC 
@@ -18,6 +19,23 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const [notification, setNotification] = useState('');
+    const [formData, setFormData] = useState({
+        token1: '',
+        token2: '',
+        minTick: '',
+        maxTick: '',
+        name: '',
+        symbol: ''
+    });
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     const createPosition = async () => {
         if (!account) {
@@ -27,7 +45,7 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
 
         setLoading(true);
         setError(null);
-        setSuccess(false);
+        setNotification('Creating position...');
 
         try {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -40,8 +58,6 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
             }
             const portfolioInfo = await response.json();
             console.log("Portfolio info:", portfolioInfo);
-
-
 
             // Attach to AssetManagementConfig
             const assetManagementConfig = new ethers.Contract(
@@ -72,12 +88,12 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
             console.log("Creating new wrapper position...");
             console.log("positionManager", positionManager.address);
             const createTx = await positionManager.createNewWrapperPosition(
-                WBNB_ADDRESS,
-                ETH_ADDRESS,
-                "BNB/ETH Position",
-                "BNB/ETH",
-                "-144180",
-                "-122100"
+                formData.token1 || WBNB_ADDRESS,
+                formData.token2 || ETH_ADDRESS,
+                formData.name || "BNB/ETH Position",
+                formData.symbol || "BNB/ETH",
+                formData.minTick || "-144180",
+                formData.maxTick || "-122100"
             );
 
             console.log("Waiting for position creation transaction...");
@@ -105,6 +121,28 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
                 throw new Error('Failed to update portfolio info');
             }
 
+
+            const positionData = {
+                token1Address: formData.token1,
+                token2Address: formData.token2,
+                positionAddress: position1,
+                minTick: formData.minTick,
+                maxTick: formData.maxTick,
+                createdAt: new Date()
+              };
+
+              console.log("positionData", positionData);
+
+
+            const savePositionResponse = await fetch(`${API_URL}/positions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(positionData)
+            });
+            console.log("savePositionResponse", savePositionResponse);
+            if (!savePositionResponse.ok) {
+                throw new Error('Failed to update portfolio info');
+            }
             console.log("Initializing portfolio tokens with WBNB...");
             // Attach to Portfolio contract
             const portfolio = new ethers.Contract(
@@ -112,20 +150,21 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
                 PORTFOLIO_ABI,
                 signer
             );
-            const initTokenTx = await portfolio.initToken([WBNB_ADDRESS], {
+            const initTokenTx = await portfolio.initToken([formData.token1], {
                 gasLimit: 1000000
             });
             await initTokenTx.wait();
             console.log("Portfolio tokens initialized.");
 
             setSuccess(true);
+            setNotification('Position created successfully!');
             if (loadPortfolio) {
                 console.log("Calling loadPortfolio after initialization");
                 await loadPortfolio();
             }
         } catch (err) {
             console.error("Error creating position:", err);
-            setError(err.message);
+            setError(err.message || 'Failed to create position. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -144,28 +183,88 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
         return length;
     }
 
-    if (error) {
-        return <div className="error-message">Error: {error}</div>;
-    }
-
-    if (success) {
-        return <div className="success-message">Successfully created WBNB/ETH position!</div>;
-    }
-
     return (
-        <div className="create-position" style={{ padding: '10px', marginTop: '10px' }}>
-            <h3>Create WBNB/ETH Position</h3>
+        <div className="create-position">
+            <h3>Create Position</h3>
+            <div className="form-group">
+                <label>Token 1 Address:</label>
+                <input
+                    type="text"
+                    name="token1"
+                    value={formData.token1}
+                    onChange={handleInputChange}
+                    placeholder="Enter Token 1 address (defaults to WBNB)"
+                    disabled={loading}
+                />
+            </div>
+            <div className="form-group">
+                <label>Token 2 Address:</label>
+                <input
+                    type="text"
+                    name="token2"
+                    value={formData.token2}
+                    onChange={handleInputChange}
+                    placeholder="Enter Token 2 address (defaults to ETH)"
+                    disabled={loading}
+                />
+            </div>
+            <div className="form-group">
+                <label>Position Name:</label>
+                <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter position name (defaults to BNB/ETH Position)"
+                    disabled={loading}
+                />
+            </div>
+            <div className="form-group">
+                <label>Position Symbol:</label>
+                <input
+                    type="text"
+                    name="symbol"
+                    value={formData.symbol}
+                    onChange={handleInputChange}
+                    placeholder="Enter position symbol (defaults to BNB/ETH)"
+                    disabled={loading}
+                />
+            </div>
+            <div className="form-group">
+                <label>Min Tick:</label>
+                <input
+                    type="number"
+                    name="minTick"
+                    value={formData.minTick}
+                    onChange={handleInputChange}
+                    placeholder="Enter minimum tick (defaults to -144180)"
+                    disabled={loading}
+                />
+            </div>
+            <div className="form-group">
+                <label>Max Tick:</label>
+                <input
+                    type="number"
+                    name="maxTick"
+                    value={formData.maxTick}
+                    onChange={handleInputChange}
+                    placeholder="Enter maximum tick (defaults to -122100)"
+                    disabled={loading}
+                />
+            </div>
+            {error && <div className="error-message">{error}</div>}
+            {notification && <div className="notification">{notification}</div>}
             {!account ? (
                 <button onClick={connect} className="connect-button">
                     Connect Wallet
                 </button>
             ) : (
-                <button
+                <button 
                     onClick={createPosition}
                     disabled={loading}
                     className="create-position-button"
                 >
-                    {loading ? 'Creating Position...' : 'Create WBNB/ETH Position'}
+                    {loading ? 'Creating Position...' : 'Create Position'}
                 </button>
             )}
         </div>
