@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
 import { PORTFOLIO_ABI } from '../config/contracts';
@@ -15,6 +15,7 @@ const ERC20_ABI = [
 ];
 
 const WBNBApproval = ({ portfolio }) => {
+  console.log("WBNBApproval");
   console.log("portfolio", portfolio);
   const { account, connect } = useMetaMask();
   const [loading, setLoading] = useState(false);
@@ -24,13 +25,20 @@ const WBNBApproval = ({ portfolio }) => {
   const [wbnbBalance, setWbnbBalance] = useState(null);
   const [wbnbAmount, setWbnbAmount] = useState('');
   const [notification, setNotification] = useState(null);
+  const [tokenAddress, setTokenAddress] = useState('');
+
+  useEffect(() => {
+    if (account && tokenAddress) {
+      checkWBNBBalance();
+    }
+  }, [account, tokenAddress]);
 
   const checkWBNBBalance = async () => {
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const WBNB = new ethers.Contract(WBNB_ADDRESS, ERC20_ABI, signer);
-      const balance = await WBNB.balanceOf(account);
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+      const balance = await tokenContract.balanceOf(account);
       const formattedBalance = ethers.utils.formatEther(balance);
       setWbnbBalance(formattedBalance);
       
@@ -52,11 +60,28 @@ const WBNBApproval = ({ portfolio }) => {
     if (/^\d*\.?\d*$/.test(value)) {
       setWbnbAmount(value);
     }
+    
+    if (parseFloat(value) > parseFloat(wbnbBalance)) {
+      setShowBalanceWarning(true);
+    } else {
+      setShowBalanceWarning(false);
+    }
   };
 
   const approveWBNB = async () => {
+
+    console.log("approveWBNB");
+    console.log("account", account);
+    console.log("tokenAddress", tokenAddress);
+    console.log("wbnbAmount", wbnbAmount);
+
     if (!account) {
       await connect();
+      return;
+    }
+
+    if (!tokenAddress) {
+      setError('Please enter a token address');
       return;
     }
 
@@ -90,13 +115,12 @@ const WBNBApproval = ({ portfolio }) => {
         signer
       );
 
- 
       // Get tokens from portfolio
       const tokens = await portfolioContract.getTokens();
       setNotification(`Found ${tokens.length} tokens to approve`);
 
       // Check and fund WBNB if needed
-      const WBNB = new ethers.Contract(WBNB_ADDRESS, ERC20_ABI, signer);
+      const WBNB = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
       const wbnbBalance = await WBNB.balanceOf(account);
       const requiredAmount = ethers.utils.parseEther(wbnbAmount);
       
@@ -106,11 +130,17 @@ const WBNBApproval = ({ portfolio }) => {
         throw new Error('Not enough WBNB in account');
       }
 
+      console.log("wbnbBalance", wbnbBalance);
+      console.log("requiredAmount", requiredAmount);
+
+      console.log("tokens", tokens);
+
       // Approve tokens to Permit2
       setNotification('Starting token approvals to Permit2...');
       for (let i = 0; i < tokens.length; i++) {
         setNotification(`Approving token ${i + 1}/${tokens.length}...`);
         try {
+          console.log("approving token___________________________________");
           const tokenContract = new ethers.Contract(tokens[i], ERC20_ABI, signer);
           setNotification(`Resetting approval for token ${i + 1}...`);
           const resetTx = await tokenContract.approve(PERMIT2_ADDRESS, 0, { gasLimit: 1000000 });
@@ -143,20 +173,29 @@ const WBNBApproval = ({ portfolio }) => {
       <div className="input-group">
         <input
           type="text"
-          value={wbnbAmount}
-          onChange={handleAmountChange}
-          placeholder="Enter WBNB amount"
+          value={tokenAddress}
+          onChange={(e) => setTokenAddress(e.target.value)}
+          placeholder="Enter token address"
           className="wbnb-input"
         />
-        <span className="input-suffix">WBNB</span>
+      </div>
+      <div className="input-group">
+        <input
+          type="text"
+          value={wbnbAmount}
+          onChange={handleAmountChange}
+          placeholder="Enter token amount"
+          className="wbnb-input"
+        />
+        <span className="input-suffix">Tokens</span>
       </div>
       
       <button
         onClick={approveWBNB}
-        disabled={loading || !wbnbAmount}
+        disabled={loading || !wbnbAmount || !tokenAddress}
         className="approve-button"
       >
-        {loading ? 'Approving WBNB...' : 'Approve WBNB'}
+        {loading ? 'Approving Token...' : 'Approve Token'}
       </button>
       
       {notification && (
