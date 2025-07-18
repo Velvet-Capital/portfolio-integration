@@ -80,7 +80,7 @@ const WithdrawWBNB = ({ portfolio }) => {
         throw new Error('No active positions found. Please ensure you have an active position before withdrawing.');
       }
 
-      const position1 = portfolio.positionList[portfolio.positionIndex];
+      const position1 = portfolio.positionList[portfolio.positionList.length - 1];
       console.log("Position 1:", position1);
 
       if (!position1 || position1 === ZERO_ADDRESS) {
