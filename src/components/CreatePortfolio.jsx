@@ -322,14 +322,14 @@ const CreatePortfolio = () => {
                 <h3>{portfolio.name}</h3>
                 <p>Address: {portfolio.portfolioAddress}</p>
                 <p>Created: {new Date(portfolio.createdAt).toLocaleDateString()}</p>
-
+{/* 
                 {!portfolio.initializedThena && (
                   <ThenaInitialization
                     portfolioAddress={portfolio.portfolioAddress}
                     loadPortfolio={loadPortfolio}
                   />
-                )}
-                {portfolio.initializedThena && (
+                )} */}
+                {(
                   <>
                     <CreatePosition portfolioAddress={portfolio.portfolioAddress} loadPortfolio={loadPortfolio} />
                     <InitToken portfolioAddress={portfolio.portfolioAddress} loadPortfolio={loadPortfolio} />
