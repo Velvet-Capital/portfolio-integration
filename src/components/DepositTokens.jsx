@@ -3,8 +3,16 @@ import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
 import { PORTFOLIO_ABI } from '../config/contracts';
 import { PERMIT2_ADDRESS, AllowanceTransfer } from "@uniswap/permit2-sdk";
+import { 
+  depositBatchAddress, 
+  DEPOSIT_BATCH_ABI, 
+  ASSET_MANAGEMENT_CONFIG_ABI, 
+  POSITION_MANAGER_ABI, 
+  VENUS_ASSET_HANDLER_ABI, 
+  priceOracleAddress, 
+  PRICE_ORACLE_ABI 
+} from '../config/contracts';
 import './DepositTokens.css';
-import { depositBatchAddress, DEPOSIT_BATCH_ABI, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ABI, VENUS_ASSET_HANDLER_ABI, priceOracleAddress, PRICE_ORACLE_ABI } from '../config/contracts';
 
 // ERC20 ABI for balance checking
 const ERC20_ABI = [

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
-import { PORTFOLIO_ABI, POSITION_MANAGER_ALGEBRA_ABI, POSITION_WRAPPER_ABI, ASSET_MANAGEMENT_CONFIG_ABI, ENSO_HANDLER_ADDRESS } from '../config/contracts';
+import { priceOracleAddress, tokenBalanceLibraryAddress, swapVerificationLibraryAddress, portfolioCalculationsAddress, withdrawBatchAddress, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,PORTFOLIO_ABI,ASSET_MANAGEMENT_CONFIG_ABI,withdrawManagerAddress,WITHDRAW_MANAGER_ABI } from '../config/contracts';
 import './WithdrawWBNB.css';
+import { getWithdrawBatchData } from '../config/helper';
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const thenaFactory = "0x306f06c147f064a010530292a1eb6737c3e378e4";
-const swapHandler = "0x9a6511194dd912d0Ca4c55712873924fD9A8f4B8";
+const ensoHandlerAddress = "0x064d07d417449c253F288A95eeBb62bf9E427DA4"
+const tokenToSwapInto = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+const swapHandler = "0xB21F98b6B9d7693bc470EE882E83deD2d0ce5F6E"
 
 
 const WithdrawWBNB = ({ portfolio }) => {
@@ -67,6 +70,7 @@ const WithdrawWBNB = ({ portfolio }) => {
       const signer = provider.getSigner();
 
       // Get portfolio contract
+      console.log("portfolio.portfolioAddress", portfolio.portfolioAddress)
       const portfolioContract = new ethers.Contract(
         portfolio.portfolioAddress,
         PORTFOLIO_ABI,
@@ -75,49 +79,30 @@ const WithdrawWBNB = ({ portfolio }) => {
 
 
 
-      // Get position wrapper
-      if (!portfolio.positionList || portfolio.positionList.length === 0) {
-        throw new Error('No active positions found. Please ensure you have an active position before withdrawing.');
-      }
+      // // Get position wrapper
+      // if (!portfolio.positionList || portfolio.positionList.length === 0) {
+      //   throw new Error('No active positions found. Please ensure you have an active position before withdrawing.');
+      // }
 
-      const position1 = portfolio.positionList[portfolio.positionList.length - 1];
-      console.log("Position 1:", position1);
+      // const position1 = portfolio.positionList[portfolio.positionList.length - 1];
+      // console.log("Position 1:", position1);
 
-      if (!position1 || position1 === ZERO_ADDRESS) {
-        throw new Error('Invalid position address. Please ensure you have an active position before withdrawing.');
-      }
+      // if (!position1 || position1 === ZERO_ADDRESS) {
+      //   throw new Error('Invalid position address. Please ensure you have an active position before withdrawing.');
+      // }
 
-      // Attach to AssetManagementConfig
-      const assetManagementConfig = new ethers.Contract(
-        portfolio.assetManagementConfig,
-        ASSET_MANAGEMENT_CONFIG_ABI,
-        signer
-      );
-      console.log("AssetManagementConfig address:", portfolio.assetManagementConfig);
+      // // Attach to AssetManagementConfig
+      // const assetManagementConfig = new ethers.Contract(
+      //   portfolio.assetManagementConfig,
+      //   ASSET_MANAGEMENT_CONFIG_ABI,
+      //   signer
+      // );
+      // console.log("AssetManagementConfig address:", portfolio.assetManagementConfig);
 
-      // Get position manager address
-      const positionManagerAddress = await assetManagementConfig.lastDeployedPositionManager();
-      console.log("Raw position manager address:", positionManagerAddress);
+      // // Get position manager address
+      // const positionManagerAddress = await assetManagementConfig.lastDeployedPositionManager();
+      // console.log("Raw position manager address:", positionManagerAddress);
 
-      if (!positionManagerAddress || positionManagerAddress === ZERO_ADDRESS) {
-        throw new Error("Position manager address is zero or undefined");
-      }
-
-      // Attach to PositionManager
-      const positionManager = new ethers.Contract(
-        positionManagerAddress,
-        POSITION_MANAGER_ALGEBRA_ABI,
-        signer
-      );
-
-      const position = new ethers.Contract(
-        position1,
-        POSITION_WRAPPER_ABI,
-        signer
-      );
-      if (!position) {
-        throw new Error('Failed to get position contract');
-      }
 
       // Calculate withdrawal amount based on percentage
       const amountPortfolioToken = await portfolioContract.balanceOf(account);
@@ -127,54 +112,93 @@ const WithdrawWBNB = ({ portfolio }) => {
 
       const withdrawalAmount = amountPortfolioToken.mul(ethers.utils.parseUnits(percentage, 2)).div(10000); // Convert percentage to basis points
 
-      console.log("Withdrawal amount:", withdrawalAmount.toString());
+      const {
+        reinvestmentSwapInfo: {
+          positionWrappers,
+          positionWrapperIndex,
+          swapTokens,
+          isExternalPosition,
+          portfolioTokenIndex,
+          isTokenExternalPosition,
+          index0,
+          index1,
+          tokensIn,
+          tokensOut,
+          swapAmounts,
+          feeTiers,
+          amountsMin0,
+          amountsMin1,
+          swapDeployer,
+        },
+        ensoCalldata,
+      } = await getWithdrawBatchData(
+        priceOracleAddress,
+        tokenBalanceLibraryAddress, // tokenBalanceLibraryAddress
+        swapVerificationLibraryAddress,
+        portfolioCalculationsAddress, // portfolioCalculationsAddress
+        AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,
+        portfolio.portfolioAddress, // portfolioAddress
+        tokenToSwapInto,
+        withdrawalAmount.toString(), // portfolioTokenWithdrawAmount
+        withdrawBatchAddress, // withdrawBatchAddress
+        await signer.getAddress()
+      );
 
-      // Execute withdrawal
-      setNotification('Executing withdrawal transaction...');
-      const withdrawalTx = await portfolioContract.multiTokenWithdrawal(
-        withdrawalAmount,
+      await portfolioContract.approve(
+        withdrawManagerAddress,
+        amountPortfolioToken
+      );
+
+      console.log("here")
+
+      console.log("withdrawBatchAddress", withdrawBatchAddress)
+      console.log("portfolio.portfolioAddress", WITHDRAW_MANAGER_ABI)
+      console.log("signer", signer)
+
+      const withdrawManager = new ethers.Contract(withdrawManagerAddress, WITHDRAW_MANAGER_ABI, signer);
+
+      console.log("here2")
+
+      const withdrawalTx = await withdrawManager.withdraw(
+        swapTokens,
+        portfolio.portfolioAddress,
+        tokenToSwapInto,
+        amountPortfolioToken,
+        ensoCalldata,
+        0,
         {
           _factory: thenaFactory,
           _token0: ZERO_ADDRESS,
           _token1: ZERO_ADDRESS,
           _flashLoanToken: ZERO_ADDRESS,
           _bufferUnit: "0",
-          _solverHandler: ENSO_HANDLER_ADDRESS,
+          _solverHandler: ensoHandlerAddress,
           _flashLoanAmount: [[0]],
           firstSwapData: [["0x"]],
           secondSwapData: [["0x"]],
-          isDexRepayment: false,
-          _poolFees: [[0, 0, 0]],
           _swapHandler: swapHandler,
-        }, { gasLimit: 1000000 }
+          _poolFees: [[0]],
+          isDexRepayment: false,
+        },
+        {
+          _positionWrappers: positionWrappers,
+          _amountsMin0: amountsMin0,
+          _amountsMin1: amountsMin1,
+          _swapDeployer: swapDeployer,
+          _tokenIn: tokensIn,
+          _tokenOut: tokensOut,
+          _amountIn: swapAmounts,
+          _fee: feeTiers,
+        },
+        {
+          gasLimit: 10000000
+        }
       );
+
 
       console.log("Waiting for withdrawal transaction...");
       const receiptWithdrawal = await withdrawalTx.wait();
       console.log("Withdrawal transaction mined:", receiptWithdrawal.transactionHash);
-
-      // Decrease liquidity from position
-      setNotification('Decreasing liquidity from position...');
-      const positionBalance = await position.balanceOf(account);
-      if (positionBalance.isZero()) {
-        throw new Error('No position balance available');
-      }
-
-      const decreaseLiquidityTx = await positionManager.decreaseLiquidity(
-        position1,
-        positionBalance,
-        0,
-        0,
-        ZERO_ADDRESS,
-        await position.token0(),
-        await position.token1(),
-        0,
-        100
-      );
-
-      console.log("Waiting for decrease liquidity transaction...");
-      const receiptDecreaseLiquidity = await decreaseLiquidityTx.wait();
-      console.log("Decrease liquidity transaction mined:", receiptDecreaseLiquidity.transactionHash);
 
       setSuccess(true);
       setNotification('Withdrawal completed successfully!');
