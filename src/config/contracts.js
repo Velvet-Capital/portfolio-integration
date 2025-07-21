@@ -5,8 +5,8 @@ export const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
 
 // Protocol Configuration
 export const THENA_PROTOCOL_HASH = ethers.utils.keccak256(
-    ethers.utils.toUtf8Bytes("THENA-CONCENTRATED-LIQUIDITY")
-  );
+  ethers.utils.toUtf8Bytes("THENA-CONCENTRATED-LIQUIDITY")
+);
 
 // Network Configuration
 export const NETWORK_ID = import.meta.env.VITE_NETWORK_ID || "1";
@@ -34,1168 +34,1168 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 // Contract ABI
 export const PORTFOLIO_FACTORY_ABI = [
-    {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "inputs": [],
-      "name": "CallerNotSuperAdmin",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "InvalidAddress",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "InvalidThresholdLength",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ModuleNotInitialised",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "NoOwnerPassed",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "PortfolioCreationIsPause",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ProtocolIsPaused",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ProtocolNotPaused",
-      "type": "error"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "previousAdmin",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "newAdmin",
-          "type": "address"
-        }
-      ],
-      "name": "AdminChanged",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "beacon",
-          "type": "address"
-        }
-      ],
-      "name": "BeaconUpgraded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "version",
-          "type": "uint8"
-        }
-      ],
-      "name": "Initialized",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferStarted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bool",
-          "name": "state",
-          "type": "bool"
-        }
-      ],
-      "name": "PortfolioCreationState",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "portfolio",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "tokenExclusionManager",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "rebalancing",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "owner",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "borrowManager",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "assetManagementConfig",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "feeModule",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "vaultAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "gnosisModule",
-              "type": "address"
-            }
-          ],
-          "indexed": false,
-          "internalType": "struct PortfolioFactory.PortfoliolInfo",
-          "name": "portfolioData",
-          "type": "tuple"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "portfolioId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "_name",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "_symbol",
-          "type": "string"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "_accessController",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "isPublicPortfolio",
-          "type": "bool"
-        }
-      ],
-      "name": "PortfolioInfo",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "TransferSuperAdminOwnership",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newGnosisSingleton",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newGnosisFallbackLibrary",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newGnosisMultisendLibrary",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "newGnosisSafeProxyFactory",
-          "type": "address"
-        }
-      ],
-      "name": "UpdateGnosisAddresses",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradeAssetManagerConfig",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradeBorrowManager",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradeFeeModule",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradePortfolio",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradePositionManager",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradeRebalance",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradeTokenExclusionManager",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "UpgradeTokenRemovalVaultBaseAddress",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "implementation",
-          "type": "address"
-        }
-      ],
-      "name": "Upgraded",
-      "type": "event"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "PortfolioInfolList",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "portfolio",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "tokenExclusionManager",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "rebalancing",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "borrowManager",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "assetManagementConfig",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "feeModule",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "vaultAddress",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "gnosisModule",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "acceptOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "_assetManagerTreasury",
-              "type": "address"
-            },
-            {
-              "internalType": "address[]",
-              "name": "_whitelistedTokens",
-              "type": "address[]"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_managementFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_performanceFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_entryFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_exitFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_initialPortfolioAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_minPortfolioTokenHoldingAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "_public",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "_transferable",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "_transferableToPublic",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "_whitelistTokens",
-              "type": "bool"
-            },
-            {
-              "internalType": "bytes32[]",
-              "name": "_witelistedProtocolIds",
-              "type": "bytes32[]"
-            },
-            {
-              "internalType": "string",
-              "name": "_name",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "_symbol",
-              "type": "string"
-            }
-          ],
-          "internalType": "struct FunctionParameters.PortfolioCreationInitData",
-          "name": "initData",
-          "type": "tuple"
-        },
-        {
-          "internalType": "address[]",
-          "name": "_owners",
-          "type": "address[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_threshold",
-          "type": "uint256"
-        }
-      ],
-      "name": "createPortfolioCustodial",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "_assetManagerTreasury",
-              "type": "address"
-            },
-            {
-              "internalType": "address[]",
-              "name": "_whitelistedTokens",
-              "type": "address[]"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_managementFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_performanceFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_entryFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_exitFee",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_initialPortfolioAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "_minPortfolioTokenHoldingAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "_public",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "_transferable",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "_transferableToPublic",
-              "type": "bool"
-            },
-            {
-              "internalType": "bool",
-              "name": "_whitelistTokens",
-              "type": "bool"
-            },
-            {
-              "internalType": "bytes32[]",
-              "name": "_witelistedProtocolIds",
-              "type": "bytes32[]"
-            },
-            {
-              "internalType": "string",
-              "name": "_name",
-              "type": "string"
-            },
-            {
-              "internalType": "string",
-              "name": "_symbol",
-              "type": "string"
-            }
-          ],
-          "internalType": "struct FunctionParameters.PortfolioCreationInitData",
-          "name": "initData",
-          "type": "tuple"
-        }
-      ],
-      "name": "createPortfolioNonCustodial",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "portfoliofundId",
-          "type": "uint256"
-        }
-      ],
-      "name": "getPortfolioList",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "gnosisFallbackLibrary",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "gnosisMultisendLibrary",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "gnosisSafeProxyFactory",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "gnosisSingleton",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "components": [
-            {
-              "internalType": "address",
-              "name": "_basePortfolioAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_baseTokenExclusionManagerAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_baseRebalancingAddres",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_baseAssetManagementConfigAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_feeModuleImplementationAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_baseTokenRemovalVaultImplementation",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_baseVelvetGnosisSafeModuleAddress",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_basePositionManager",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_baseExternalPositionStorage",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_baseBorrowManager",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_gnosisSingleton",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_gnosisFallbackLibrary",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_gnosisMultisendLibrary",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_gnosisSafeProxyFactory",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "_protocolConfig",
-              "type": "address"
-            }
-          ],
-          "internalType": "struct FunctionParameters.PortfolioFactoryInitData",
-          "name": "initData",
-          "type": "tuple"
-        }
-      ],
-      "name": "initialize",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "pendingOwner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "portfolioId",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "protocolConfig",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "proxiableUUID",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bool",
-          "name": "_state",
-          "type": "bool"
-        }
-      ],
-      "name": "setPortfolioCreationState",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "setTokenRemovalVaultModule",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_accessController",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_account",
-          "type": "address"
-        }
-      ],
-      "name": "transferSuperAdminOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_newBaseAddress",
-          "type": "address"
-        }
-      ],
-      "name": "updateBaseExternalPositionStorageAddress",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_newGnosisSingleton",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_newGnosisFallbackLibrary",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_newGnosisMultisendLibrary",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "_newGnosisSafeProxyFactory",
-          "type": "address"
-        }
-      ],
-      "name": "updateGnosisAddresses",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_proxy",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "upgradeAssetManagerConfig",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_proxy",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "upgradeBorrowManager",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_proxy",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "upgradeFeeModule",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_proxy",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "upgradePortfolio",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_proxy",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "upgradePositionManager",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_proxy",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "upgradeRebalance",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        }
-      ],
-      "name": "upgradeTo",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newImplementation",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes",
-          "name": "data",
-          "type": "bytes"
-        }
-      ],
-      "name": "upgradeToAndCall",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_proxy",
-          "type": "address[]"
-        },
-        {
-          "internalType": "address",
-          "name": "_newImpl",
-          "type": "address"
-        }
-      ],
-      "name": "upgradeTokenExclusionManager",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "whitelistedPortfolioAddress",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    }
-  ];
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "CallerNotSuperAdmin",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidThresholdLength",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ModuleNotInitialised",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoOwnerPassed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PortfolioCreationIsPause",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ProtocolIsPaused",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ProtocolNotPaused",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "previousAdmin",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newAdmin",
+        "type": "address"
+      }
+    ],
+    "name": "AdminChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "beacon",
+        "type": "address"
+      }
+    ],
+    "name": "BeaconUpgraded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bool",
+        "name": "state",
+        "type": "bool"
+      }
+    ],
+    "name": "PortfolioCreationState",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "portfolio",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "tokenExclusionManager",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "rebalancing",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "borrowManager",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "assetManagementConfig",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "feeModule",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "vaultAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "gnosisModule",
+            "type": "address"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct PortfolioFactory.PortfoliolInfo",
+        "name": "portfolioData",
+        "type": "tuple"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "portfolioId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "_symbol",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_accessController",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPublicPortfolio",
+        "type": "bool"
+      }
+    ],
+    "name": "PortfolioInfo",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "TransferSuperAdminOwnership",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newGnosisSingleton",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newGnosisFallbackLibrary",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newGnosisMultisendLibrary",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newGnosisSafeProxyFactory",
+        "type": "address"
+      }
+    ],
+    "name": "UpdateGnosisAddresses",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradeAssetManagerConfig",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradeBorrowManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradeFeeModule",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradePortfolio",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradePositionManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradeRebalance",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradeTokenExclusionManager",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradeTokenRemovalVaultBaseAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "implementation",
+        "type": "address"
+      }
+    ],
+    "name": "Upgraded",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "PortfolioInfolList",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "portfolio",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenExclusionManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "rebalancing",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "borrowManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "assetManagementConfig",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "feeModule",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "vaultAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "gnosisModule",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "acceptOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_assetManagerTreasury",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_whitelistedTokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_managementFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_performanceFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_entryFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_exitFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_initialPortfolioAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_minPortfolioTokenHoldingAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "_public",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "_transferable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "_transferableToPublic",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "_whitelistTokens",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes32[]",
+            "name": "_witelistedProtocolIds",
+            "type": "bytes32[]"
+          },
+          {
+            "internalType": "string",
+            "name": "_name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "_symbol",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct FunctionParameters.PortfolioCreationInitData",
+        "name": "initData",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_owners",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_threshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "createPortfolioCustodial",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_assetManagerTreasury",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_whitelistedTokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_managementFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_performanceFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_entryFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_exitFee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_initialPortfolioAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_minPortfolioTokenHoldingAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "_public",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "_transferable",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "_transferableToPublic",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "_whitelistTokens",
+            "type": "bool"
+          },
+          {
+            "internalType": "bytes32[]",
+            "name": "_witelistedProtocolIds",
+            "type": "bytes32[]"
+          },
+          {
+            "internalType": "string",
+            "name": "_name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "_symbol",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct FunctionParameters.PortfolioCreationInitData",
+        "name": "initData",
+        "type": "tuple"
+      }
+    ],
+    "name": "createPortfolioNonCustodial",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "portfoliofundId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPortfolioList",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gnosisFallbackLibrary",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gnosisMultisendLibrary",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gnosisSafeProxyFactory",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gnosisSingleton",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_basePortfolioAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_baseTokenExclusionManagerAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_baseRebalancingAddres",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_baseAssetManagementConfigAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_feeModuleImplementationAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_baseTokenRemovalVaultImplementation",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_baseVelvetGnosisSafeModuleAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_basePositionManager",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_baseExternalPositionStorage",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_baseBorrowManager",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_gnosisSingleton",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_gnosisFallbackLibrary",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_gnosisMultisendLibrary",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_gnosisSafeProxyFactory",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_protocolConfig",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct FunctionParameters.PortfolioFactoryInitData",
+        "name": "initData",
+        "type": "tuple"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingOwner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "portfolioId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "protocolConfig",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "proxiableUUID",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_state",
+        "type": "bool"
+      }
+    ],
+    "name": "setPortfolioCreationState",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "setTokenRemovalVaultModule",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_accessController",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_account",
+        "type": "address"
+      }
+    ],
+    "name": "transferSuperAdminOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_newBaseAddress",
+        "type": "address"
+      }
+    ],
+    "name": "updateBaseExternalPositionStorageAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_newGnosisSingleton",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_newGnosisFallbackLibrary",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_newGnosisMultisendLibrary",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_newGnosisSafeProxyFactory",
+        "type": "address"
+      }
+    ],
+    "name": "updateGnosisAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_proxy",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "upgradeAssetManagerConfig",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_proxy",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "upgradeBorrowManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_proxy",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "upgradeFeeModule",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_proxy",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "upgradePortfolio",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_proxy",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "upgradePositionManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_proxy",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "upgradeRebalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "upgradeTo",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "upgradeToAndCall",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_proxy",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_newImpl",
+        "type": "address"
+      }
+    ],
+    "name": "upgradeTokenExclusionManager",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "whitelistedPortfolioAddress",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 
 // Contract ABIs
 export const PORTFOLIO_ABI = [
@@ -4684,9 +4684,6 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
   }
 ];
 
-export const TOKEN_BALANCE_LIBRARY_ABI = [
-  "function getTokenBalance(address token, address account) view returns (uint256)"
-];
 
 export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ABI = [
   "function verifySwap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) view returns (bool)"
@@ -4694,7 +4691,7 @@ export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ABI = [
 
 // Contract Addresses
 export const TOKEN_BALANCE_LIBRARY_ADDRESS = import.meta.env.VITE_TOKEN_BALANCE_LIBRARY_ADDRESS;
-export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS = import.meta.env.VITE_SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS; 
+export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS = import.meta.env.VITE_SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS;
 export const ENSO_HANDLER_ADDRESS = import.meta.env.VITE_ENSO_HANDLER_ADDRESS;
 export const POSITION_MANAGER_ABI = [
   "function getDeployedPositionWrappersLength() view returns (uint256)",
@@ -4702,7 +4699,7 @@ export const POSITION_MANAGER_ABI = [
   "function createNewWrapperPosition(address token0, address token1, string memory name, string memory symbol, string memory tickLower, string memory tickUpper) returns (address)"
 ];
 
-export const REBALANCING_ABI =  [
+export const REBALANCING_ABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -5669,7 +5666,7 @@ export const REBALANCING_ABI =  [
   }
 ]
 
-export const POSITION_WRAPPER_ABI =  [
+export const POSITION_WRAPPER_ABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -6409,7 +6406,7 @@ export const POSITION_WRAPPER_ABI =  [
   }
 ]
 
-export const AMOUNT_CALCULATIONS_ALGEBRA_ABI =  [
+export const AMOUNT_CALCULATIONS_ALGEBRA_ABI = [
   {
     "inputs": [],
     "name": "tickOutOfRange",
@@ -6590,9 +6587,9 @@ export const AMOUNT_CALCULATIONS_ALGEBRA_ABI =  [
   }
 ]
 
-export const AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS = "0x66863f37eee1a851b5A2dB41BfE135Db0D937fBa"
+export const AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS = "0xF450C285f7D51A5c1Eb715b435F483E4Fa8FdC91"
 
-export const DEPOSIT_BATCH_ABI =  [
+export const DEPOSIT_BATCH_ABI = [
   {
     "inputs": [
       {
@@ -7187,7 +7184,7 @@ export const PRICE_ORACLE_ABI = [
 
 export const venusAssetHandlerAddress = "0xB0f8AFf76e809503E03E4F48A0C241Fd499A8A13"
 
-export const VENUS_ASSET_HANDLER_ABI =  [
+export const VENUS_ASSET_HANDLER_ABI = [
   {
     "inputs": [
       {
@@ -8374,6 +8371,1741 @@ export const ERC20_ABI = [
         "type": "bool"
       }
     ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+
+export const IAllowanceTransfer = [
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint160",
+        "name": "amount",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "expiration",
+        "type": "uint48"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "Lockdown",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "newNonce",
+        "type": "uint48"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "oldNonce",
+        "type": "uint48"
+      }
+    ],
+    "name": "NonceInvalidation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint160",
+        "name": "amount",
+        "type": "uint160"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "expiration",
+        "type": "uint48"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "nonce",
+        "type": "uint48"
+      }
+    ],
+    "name": "Permit",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "DOMAIN_SEPARATOR",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint160",
+        "name": "amount",
+        "type": "uint160"
+      },
+      {
+        "internalType": "uint48",
+        "name": "expiration",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "nonce",
+        "type": "uint48"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint160",
+        "name": "amount",
+        "type": "uint160"
+      },
+      {
+        "internalType": "uint48",
+        "name": "expiration",
+        "type": "uint48"
+      }
+    ],
+    "name": "approve",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint48",
+        "name": "newNonce",
+        "type": "uint48"
+      }
+    ],
+    "name": "invalidateNonces",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IAllowanceTransfer.TokenSpenderPair[]",
+        "name": "approvals",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "lockdown",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+              },
+              {
+                "internalType": "uint160",
+                "name": "amount",
+                "type": "uint160"
+              },
+              {
+                "internalType": "uint48",
+                "name": "expiration",
+                "type": "uint48"
+              },
+              {
+                "internalType": "uint48",
+                "name": "nonce",
+                "type": "uint48"
+              }
+            ],
+            "internalType": "struct IAllowanceTransfer.PermitDetails[]",
+            "name": "details",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sigDeadline",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IAllowanceTransfer.PermitBatch",
+        "name": "permitBatch",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "permit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "token",
+                "type": "address"
+              },
+              {
+                "internalType": "uint160",
+                "name": "amount",
+                "type": "uint160"
+              },
+              {
+                "internalType": "uint48",
+                "name": "expiration",
+                "type": "uint48"
+              },
+              {
+                "internalType": "uint48",
+                "name": "nonce",
+                "type": "uint48"
+              }
+            ],
+            "internalType": "struct IAllowanceTransfer.PermitDetails",
+            "name": "details",
+            "type": "tuple"
+          },
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "sigDeadline",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IAllowanceTransfer.PermitSingle",
+        "name": "permitSingle",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "permit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint160",
+            "name": "amount",
+            "type": "uint160"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct IAllowanceTransfer.AllowanceTransferDetails[]",
+        "name": "transferDetails",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint160",
+        "name": "amount",
+        "type": "uint160"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+
+export const PORTFOLIO_CALCULATIONS_ABI =  [
+  {
+    "inputs": [],
+    "name": "BalanceOfVaultIsZero",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidId",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidLength",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoTokensRemoved",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TOTAL_WEIGHT",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_protocolToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_comptroller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_aaveAssetHandler",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_portfolioTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_flashLoanBufferUnit",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateAaveBorrowedPortionAndFlashLoanDetails",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "borrowedPortion",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "flashLoanAmount",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "underlyingTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "borrowedTokens",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_borrowToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_borrowToRepay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bufferUnit",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateAaveFlashLoanAmountForRepayment",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "flashLoanAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_protocolToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_comptroller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_venusAssetHandler",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_portfolioTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_flashLoanBufferUnit",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateBorrowedPortionAndFlashLoanDetails",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "borrowedPortion",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "flashLoanAmount",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "underlyingTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "borrowedTokens",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_borrowProtocolToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_flashLoanProtocolToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_comptroller",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_borrowToRepay",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_bufferUnit",
+        "type": "uint256"
+      }
+    ],
+    "name": "calculateFlashLoanAmountForRepayment",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "flashLoanAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_controller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_aaveAssetHandler",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_protocolToken",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_portfolioTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_debtRepayAmount",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "feeUnit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bufferUnit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAaveCollateralAmountToSell",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_controller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_venusAssetHandler",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_protocolToken",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_portfolioTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_debtRepayAmount",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "feeUnit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bufferUnit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCollateralAmountToSell",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_userShare",
+        "type": "uint256"
+      }
+    ],
+    "name": "getExpectedMintAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      }
+    ],
+    "name": "getPerformanceFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "protocolFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "assetManagerFee",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_pool",
+        "type": "address"
+      }
+    ],
+    "name": "getPoolFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      }
+    ],
+    "name": "getPortfolioData",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "tokenAmountArray",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "tokenDecimalArray",
+        "type": "uint8[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "indexTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalSupply",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      }
+    ],
+    "name": "getPortfolioDataByte",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      }
+    ],
+    "name": "getProtocolAndManagementFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "assetManagerFeeToMint",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "protocolFeeToMint",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      }
+    ],
+    "name": "getTokenBalancesAndDecimals",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint8[]",
+        "name": "",
+        "type": "uint8[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "userAmounts",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      }
+    ],
+    "name": "getUserAmountToDeposit",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_desiredShare",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "endId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getUserTokenClaimBalance",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "pools",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      }
+    ],
+    "name": "getVenusTokenBorrowedBalance",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "balances",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_portfolioTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_portfolio",
+        "type": "address"
+      }
+    ],
+    "name": "getWithdrawalAmounts",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+
+export const portfolioCalculationsAddress = "0x2b8dd8485b62E70e15a8545aa2d6E8be3B6248Fc"
+
+export const tokenBalanceLibraryAddress = "0x722A8eB7A49FA925Fc6305a56a379364f865638D"
+
+export const TOKEN_BALANCE_LIBRARY_ABI = [
+  {
+    "inputs": [],
+    "name": "ControllerDataNotFound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "contract IProtocolConfig",
+        "name": "_protocolConfig",
+        "type": "IProtocolConfig"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "controller",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "unusedCollateralPercentage",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct TokenBalanceLibrary.ControllerData[]",
+        "name": "controllersData",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "_getAdjustedTokenBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenBalance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isCollateralEnabled",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      }
+    ],
+    "name": "_getTokenBalanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenBalance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+
+export const EXTERNAL_POSITION_STORAGE_ABI = [
+  {
+    "inputs": [],
+    "name": "CallerNotOwner",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidDeviationBps",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ProtocolNotEnabled",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_newDeviationBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "AllowedRatioDeviationBpsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_newAddress",
+        "type": "address"
+      }
+    ],
+    "name": "PositionWrapperBaseAddressUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "ProtocolDisabled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "nftManager",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "swapRouter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "positionWrapperBase",
+        "type": "address"
+      }
+    ],
+    "name": "ProtocolEnabled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_newSlippage",
+        "type": "uint256"
+      }
+    ],
+    "name": "UpdatedSlippageFeeReinvestment",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "UpgradePositionWrapper",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "acceptedSlippageFeeReinvestment",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "allowedRatioDeviationBps",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "disableProtocol",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "nftManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "swapRouter",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "positionWrapperBase",
+        "type": "address"
+      }
+    ],
+    "name": "enableProtocol",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getPositionWrapperBaseImplementation",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getProtocolAddresses",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "nftManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "swapRouter",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      }
+    ],
+    "name": "isProtocolEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "protocols",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "nftManager",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "swapRouter",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "positionWrapperBase",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_newDeviationBps",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateAllowedRatioDeviationBps",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_newSlippageFeeReinvestment",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateAllowedSlippage",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "protocolId",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "newImplementation",
+        "type": "address"
+      }
+    ],
+    "name": "updatePositionWrapperBaseImplementation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+
+export const swapVerificationLibraryAddress = "0x855d95bab7256e4DC4d36639EDaf5536b18a1324"
+
+
+export const withdrawBatchAddress="0x612043fa5D0021AD0D3A9A0bE86018e479a27F98"
+
+export const withdrawManagerAddress="0xb9d5FC7CE2b00e18D9cb93441cE912e6aB8136ef"
+
+export const WITHDRAW_MANAGER_ABI= [
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
+      }
+    ],
+    "name": "Initialized",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_withdrawBatch",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_portfolioFactory",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "portfolioFactory",
+    "outputs": [
+      {
+        "internalType": "contract IPortfolioFactory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_target",
+        "type": "address"
+      }
+    ],
+    "name": "validateTargetWhitelisting",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_swapTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_target",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_tokenToWithdraw",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_portfolioTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "_callData",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_expectedOutputAmount",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_factory",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token0",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token1",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_flashLoanToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_solverHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_swapHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_bufferUnit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[][]",
+            "name": "_flashLoanAmount",
+            "type": "uint256[][]"
+          },
+          {
+            "internalType": "uint256[][]",
+            "name": "_poolFees",
+            "type": "uint256[][]"
+          },
+          {
+            "internalType": "bytes[][]",
+            "name": "firstSwapData",
+            "type": "bytes[][]"
+          },
+          {
+            "internalType": "bytes[][]",
+            "name": "secondSwapData",
+            "type": "bytes[][]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDexRepayment",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct FunctionParameters.withdrawRepayParams",
+        "name": "repayData",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address[]",
+            "name": "_positionWrappers",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amountsMin0",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amountsMin1",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_swapDeployer",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenIn",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenOut",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amountIn",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint24[]",
+            "name": "_fee",
+            "type": "uint24[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.ExternalPositionWithdrawParams",
+        "name": "_params",
+        "type": "tuple"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   }
