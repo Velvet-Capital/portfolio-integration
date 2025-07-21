@@ -6591,3 +6591,1790 @@ export const AMOUNT_CALCULATIONS_ALGEBRA_ABI =  [
 ]
 
 export const AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS = "0x66863f37eee1a851b5A2dB41BfE135Db0D937fBa"
+
+export const DEPOSIT_BATCH_ABI =  [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_swapTarget",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "DepositBatchCallFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidBalanceDiff",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidLength",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TransferFailed",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "_minMintAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_depositAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_target",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_depositToken",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "_callData",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.BatchHandler",
+        "name": "data",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address[]",
+            "name": "_positionWrappers",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_swapTokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address",
+            "name": "_deployer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_positionWrapperIndex",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_portfolioTokenIndex",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_index0",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_index1",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amount0Min",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amount1Min",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "bool[]",
+            "name": "_isExternalPosition",
+            "type": "bool[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_swapDeployer",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenIn",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenOut",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amountIn",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint24[]",
+            "name": "_fee",
+            "type": "uint24[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.ExternalPositionDepositParams",
+        "name": "_params",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "multiTokenSwapAndDeposit",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "_minMintAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_depositAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_target",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_depositToken",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "_callData",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.BatchHandler",
+        "name": "data",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address[]",
+            "name": "_positionWrappers",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_swapTokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address",
+            "name": "_deployer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_positionWrapperIndex",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_portfolioTokenIndex",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_index0",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_index1",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amount0Min",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amount1Min",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "bool[]",
+            "name": "_isExternalPosition",
+            "type": "bool[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_swapDeployer",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenIn",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenOut",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amountIn",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint24[]",
+            "name": "_fee",
+            "type": "uint24[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.ExternalPositionDepositParams",
+        "name": "_params",
+        "type": "tuple"
+      }
+    ],
+    "name": "multiTokenSwapETHAndTransfer",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
+]
+
+export const depositBatchAddress = "0x784DA05C313Cf8e7D6aFB5EeDbB96990eF59Df21"
+
+export const priceOracleAddress = "0xd9a4D16D818AfDD759dF7413485997847F6Ae6d8"
+
+export const PRICE_ORACLE_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_WETH",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "AggregatorAlreadyExistsError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "FeedNotFoundError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "IncorrectArrayLength",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidAddressError",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NonExistingFeed",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PriceOracleExpired",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "PriceOracleInvalid",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "base",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "aggregator",
+        "type": "address"
+      }
+    ],
+    "name": "FeedAdded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "base",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "aggregator",
+        "type": "address"
+      }
+    ],
+    "name": "FeedUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "oracleExpirationThreshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "OracleExpirationThresholdUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "WETH",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_base",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      }
+    ],
+    "name": "convertToUSD18Decimals",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountOut",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "base",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      }
+    ],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "oracleExpirationThreshold",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "bases",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "quotes",
+        "type": "address[]"
+      },
+      {
+        "internalType": "contract AggregatorV2V3Interface[]",
+        "name": "aggregators",
+        "type": "address[]"
+      }
+    ],
+    "name": "setFeeds",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "base",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "quote",
+        "type": "address"
+      },
+      {
+        "internalType": "contract AggregatorV2V3Interface",
+        "name": "aggregator",
+        "type": "address"
+      }
+    ],
+    "name": "updateFeed",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_newTimeout",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateOracleExpirationThreshold",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+
+export const venusAssetHandlerAddress = "0xB0f8AFf76e809503E03E4F48A0C241Fd499A8A13"
+
+export const VENUS_ASSET_HANDLER_ABI =  [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vBNB_Address",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_WBNB_Address",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "WBNB_Address",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_toApprove",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amountToApprove",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "borrowAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "borrow",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "assets",
+        "type": "address[]"
+      }
+    ],
+    "name": "enterMarket",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_receiver",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_portfolioTokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_totalSupply",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_counter",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "borrowedTokens",
+        "type": "address[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_factory",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token0",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token1",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_flashLoanToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_solverHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_swapHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_bufferUnit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[][]",
+            "name": "_flashLoanAmount",
+            "type": "uint256[][]"
+          },
+          {
+            "internalType": "uint256[][]",
+            "name": "_poolFees",
+            "type": "uint256[][]"
+          },
+          {
+            "internalType": "bytes[][]",
+            "name": "firstSwapData",
+            "type": "bytes[][]"
+          },
+          {
+            "internalType": "bytes[][]",
+            "name": "secondSwapData",
+            "type": "bytes[][]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDexRepayment",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct FunctionParameters.withdrawRepayParams",
+        "name": "repayData",
+        "type": "tuple"
+      }
+    ],
+    "name": "executeUserFlashLoan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_receiver",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "_factory",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token0",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token1",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_flashLoanToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_debtToken",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_protocolToken",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address",
+            "name": "_solverHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_swapHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_bufferUnit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_flashLoanAmount",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_debtRepayAmount",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_poolFees",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "firstSwapData",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "secondSwapData",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isMaxRepayment",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDexRepayment",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct FunctionParameters.RepayParams",
+        "name": "repayData",
+        "type": "tuple"
+      }
+    ],
+    "name": "executeVaultFlashLoan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      }
+    ],
+    "name": "exitMarket",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "comptroller",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "name": "getAllProtocolAssets",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "lendTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "borrowTokens",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      }
+    ],
+    "name": "getBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "comptroller",
+        "type": "address"
+      }
+    ],
+    "name": "getBorrowedTokens",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "borrowedTokens",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_controller",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_protocolToken",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "lendTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_debtRepayAmount",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "feeUnit",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalCollateral",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bufferUnit",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCollateralAmountToSell",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getDecimals",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "decimals",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "comptroller",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "name": "getUserAccountData",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "totalCollateral",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalDebt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "availableBorrows",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentLiquidationThreshold",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ltv",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "healthFactor",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct FunctionParameters.AccountData",
+        "name": "accountData",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address[]",
+            "name": "lendTokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "borrowTokens",
+            "type": "address[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.TokenAddresses",
+        "name": "tokenAddresses",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "controller",
+        "type": "address"
+      }
+    ],
+    "name": "isCollateralEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "executor",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "controller",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "lendTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalCollateral",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "fee",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "flashLoanToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "debtToken",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "protocolTokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address",
+            "name": "solverHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "swapHandler",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "poolAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "bufferUnit",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "flashLoanAmount",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "debtRepayAmount",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "poolFees",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "firstSwapData",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "secondSwapData",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isMaxRepayment",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isDexRepayment",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct FunctionParameters.FlashLoanData",
+        "name": "flashData",
+        "type": "tuple"
+      }
+    ],
+    "name": "loanProcessing",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes",
+            "name": "txData",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct IAssetHandler.MultiTransaction[]",
+        "name": "transactions",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalFlashAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "borrowAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "repay",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "tokenIn",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "tokenOut",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minAmountOut",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "fee",
+        "type": "uint256"
+      }
+    ],
+    "name": "swapTokens",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vBNB_Address",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  }
+]
+
+export const ERC20_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "symbol",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "allowance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "needed",
+        "type": "uint256"
+      }
+    ],
+    "name": "ERC20InsufficientAllowance",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "balance",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "needed",
+        "type": "uint256"
+      }
+    ],
+    "name": "ERC20InsufficientBalance",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "approver",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidApprover",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "receiver",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidReceiver",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidSender",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "ERC20InvalidSpender",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "mint",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
