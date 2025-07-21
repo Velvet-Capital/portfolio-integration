@@ -2,23 +2,62 @@ import React, { useState } from 'react';
 import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
 import { PORTFOLIO_ABI } from '../config/contracts';
+import './InitToken.css';
 
 const InitToken = ({ portfolioAddress, loadPortfolio }) => {
   const { account } = useMetaMask();
-  const [tokenAddress, setTokenAddress] = useState('');
+  const [tokenAddresses, setTokenAddresses] = useState(['']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [notification, setNotification] = useState(null);
 
-  const initToken = async () => {
-    if (!account || !portfolioAddress || !tokenAddress) {
-      setError('Please provide a token address');
+  const addTokenInput = () => {
+    setTokenAddresses([...tokenAddresses, '']);
+  };
+
+  const removeTokenInput = (index) => {
+    if (tokenAddresses.length > 1) {
+      const newAddresses = tokenAddresses.filter((_, i) => i !== index);
+      setTokenAddresses(newAddresses);
+    }
+  };
+
+  const updateTokenAddress = (index, value) => {
+    const newAddresses = [...tokenAddresses];
+    newAddresses[index] = value;
+    setTokenAddresses(newAddresses);
+  };
+
+  const validateAddress = (address) => {
+    return ethers.utils.isAddress(address) && address.length === 42;
+  };
+
+  const initTokens = async () => {
+    // Filter out empty addresses and validate
+    const validAddresses = tokenAddresses.filter(addr => addr.trim() !== '');
+    
+    if (!account || !portfolioAddress) {
+      setError('Please connect wallet and ensure portfolio is selected');
+      return;
+    }
+
+    if (validAddresses.length === 0) {
+      setError('Please provide at least one valid token address');
+      return;
+    }
+
+    // Validate all addresses
+    const invalidAddresses = validAddresses.filter(addr => !validateAddress(addr));
+    if (invalidAddresses.length > 0) {
+      setError(`Invalid token addresses: ${invalidAddresses.join(', ')}`);
       return;
     }
 
     setLoading(true);
     setError(null);
     setSuccess(false);
+    setNotification('Starting token initialization...');
 
     try {
       // Create provider and signer
@@ -32,25 +71,30 @@ const InitToken = ({ portfolioAddress, loadPortfolio }) => {
         signer
       );
 
-      // Initialize token with the provided address
-      const initTokenTx = await portfolio.initToken([tokenAddress], {
-        gasLimit: 1000000
+      setNotification(`Initializing ${validAddresses.length} tokens...`);
+
+      // Initialize tokens with the provided addresses
+      const initTokenTx = await portfolio.initToken(validAddresses, {
+        gasLimit: 1000000 * validAddresses.length // Adjust gas limit based on number of tokens
       });
       
+      setNotification('Waiting for transaction to be mined...');
       await initTokenTx.wait();
       
       setSuccess(true);
-      setTokenAddress('');
+      setTokenAddresses(['']); // Reset to single empty input
+      setNotification(null);
       
       // Refresh portfolio data
       if (loadPortfolio) {
         await loadPortfolio();
       }
 
-      console.log('Token initialized successfully:', tokenAddress);
+      console.log('Tokens initialized successfully:', validAddresses);
     } catch (err) {
-      console.error('Error initializing token:', err);
-      setError(err.message || 'Failed to initialize token. Please try again.');
+      console.error('Error initializing tokens:', err);
+      setError(err.message || 'Failed to initialize tokens. Please try again.');
+      setNotification(null);
     } finally {
       setLoading(false);
     }
@@ -58,22 +102,57 @@ const InitToken = ({ portfolioAddress, loadPortfolio }) => {
 
   return (
     <div className="init-token">
-      <h4>Initialize Token</h4>
-      <div className="input-group">
-        <input
-          type="text"
-          placeholder="Enter token address"
-          value={tokenAddress}
-          onChange={(e) => setTokenAddress(e.target.value)}
-          disabled={loading}
-        />
+      <h4>Initialize Tokens</h4>
+      
+      <div className="token-inputs">
+        {tokenAddresses.map((address, index) => (
+          <div key={index} className="token-input-group">
+            <input
+              type="text"
+              placeholder="Enter token address"
+              value={address}
+              onChange={(e) => updateTokenAddress(index, e.target.value)}
+              disabled={loading}
+              className={address.trim() !== '' && !validateAddress(address) ? 'invalid' : ''}
+            />
+            {tokenAddresses.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeTokenInput(index)}
+                className="remove-btn"
+                disabled={loading}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="action-buttons">
         <button
-          onClick={initToken}
-          disabled={loading || !tokenAddress.trim()}
+          type="button"
+          onClick={addTokenInput}
+          className="add-btn"
+          disabled={loading}
         >
-          {loading ? 'Initializing...' : 'Init Token'}
+          + Add Token
+        </button>
+        
+        <button
+          onClick={initTokens}
+          disabled={loading || tokenAddresses.every(addr => addr.trim() === '')}
+          className="init-btn"
+        >
+          {loading ? 'Initializing...' : `Init ${tokenAddresses.filter(addr => addr.trim() !== '').length} Token(s)`}
         </button>
       </div>
+
+      {notification && (
+        <div className="notification">
+          <p>{notification}</p>
+        </div>
+      )}
       
       {error && (
         <div className="error">
@@ -84,7 +163,7 @@ const InitToken = ({ portfolioAddress, loadPortfolio }) => {
 
       {success && (
         <div className="success">
-          <p>Token initialized successfully!</p>
+          <p>Tokens initialized successfully!</p>
           <button onClick={() => setSuccess(false)}>Dismiss</button>
         </div>
       )}

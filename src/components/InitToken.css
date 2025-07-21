@@ -1,0 +1,200 @@
+.init-token {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.init-token h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.token-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.token-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.token-input-group input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: 'Courier New', monospace;
+  transition: border-color 0.2s;
+}
+
+.token-input-group input:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.token-input-group input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.token-input-group input.invalid {
+  border-color: #dc3545;
+  background-color: #fff5f5;
+}
+
+.remove-btn {
+  padding: 0.5rem 0.75rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.2s;
+}
+
+.remove-btn:hover {
+  background-color: #c82333;
+}
+
+.remove-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.add-btn {
+  padding: 0.75rem 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.add-btn:hover {
+  background-color: #218838;
+}
+
+.add-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.init-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.init-btn:hover {
+  background-color: #357abd;
+}
+
+.init-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.notification {
+  padding: 0.75rem;
+  background-color: #e3f2fd;
+  border: 1px solid #2196f3;
+  border-radius: 6px;
+  color: #1976d2;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.error {
+  padding: 0.75rem;
+  background-color: #fff3f3;
+  border: 1px solid #ffcdd2;
+  border-radius: 6px;
+  color: #d32f2f;
+  font-size: 0.9rem;
+}
+
+.error p {
+  margin: 0 0 0.5rem 0;
+}
+
+.error button {
+  padding: 0.25rem 0.5rem;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.success {
+  padding: 0.75rem;
+  background-color: #f1f8e9;
+  border: 1px solid #c5e1a5;
+  border-radius: 6px;
+  color: #2e7d32;
+  font-size: 0.9rem;
+}
+
+.success p {
+  margin: 0 0 0.5rem 0;
+}
+
+.success button {
+  padding: 0.25rem 0.5rem;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .init-token {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .token-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .remove-btn {
+    align-self: flex-end;
+    width: fit-content;
+  }
+} 
