@@ -4,8 +4,65 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  max-width: 500px;
+  max-width: 600px;
   margin: 0 auto;
+}
+
+.deposit-input {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.deposit-input label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.deposit-input input {
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.deposit-input input:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.deposit-input input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.deposit-info {
+  width: 100%;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.deposit-info p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.deposit-info ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.deposit-info li {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: #6c757d;
 }
 
 .deposit-button {

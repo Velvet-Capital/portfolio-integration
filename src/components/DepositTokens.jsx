@@ -4,6 +4,7 @@ import { ethers } from 'ethers';
 import { PORTFOLIO_ABI } from '../config/contracts';
 import { PERMIT2_ADDRESS, AllowanceTransfer } from "@uniswap/permit2-sdk";
 import './DepositTokens.css';
+import { depositBatchAddress, DEPOSIT_BATCH_ABI, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ABI, VENUS_ASSET_HANDLER_ABI, priceOracleAddress, PRICE_ORACLE_ABI } from '../config/contracts';
 
 // ERC20 ABI for balance checking
 const ERC20_ABI = [
@@ -58,65 +59,123 @@ const DepositTokens = ({ portfolio }) => {
       const depositTokens = await portfolioContract.getTokens();
       setNotification(`Found ${depositTokens.length} tokens to deposit`);
 
-      let tokenDetails = [];
-      let amounts = [];
+      const depositBatch = new ethers.Contract(depositBatchAddress, DEPOSIT_BATCH_ABI, signer);
 
-      // Get token details and balances
-      for (let i = 0; i < depositTokens.length; i++) {
-        setNotification(`Processing token ${i + 1}/${depositTokens.length}...`);
-        
-        // Get nonce from Permit2
-        const { nonce } = await permit2.allowance(
-          account,
-          depositTokens[i],
-          portfolio.portfolioAddress
-        );
+      const config = await portfolioContract.assetManagementConfig();
+      const assetManagementConfig = new ethers.Contract(config, ASSET_MANAGEMENT_CONFIG_ABI, signer);
 
-        // Get token balance
-        const tokenContract = new ethers.Contract(depositTokens[i], ERC20_ABI, signer);
-        const balance = await tokenContract.balanceOf(account);
-        
-        setNotification(`Balance for token ${i + 1}: ${ethers.utils.formatEther(balance)} BNB`);
+      let positionManagerAddress =
+        await assetManagementConfig.lastDeployedPositionManager();
 
-        let detail = {
-          token: depositTokens[i],
-          amount: balance,
-          expiration: toDeadline(1000 * 60 * 60 * 30), // 30 hours
-          nonce,
-        };
-        amounts.push(balance);
-        tokenDetails.push(detail);
+      const positionManager = new ethers.Contract(positionManagerAddress, POSITION_MANAGER_ABI, signer);
+
+      let swapTokens = [];
+      let positionWrapperIndex = [];
+      let positionWrappers = [];
+      let portfolioTokenIndex = [];
+      let isExternalPosition = [];
+      let isTokenExternalPosition = [];
+      let index0 = [];
+      let index1 = [];
+      let amount0Min = [];
+      let amount1Min = [];
+      let fee = [];
+      let swapDeployer = [];
+      let tokenIn = [];
+      let tokenOut = [];
+      let amountIn = [];
+
+      if (isValidAddress(positionManagerAddress)) {
+        console.log("In Valid Address");
+      } else {
+        swapTokens = tokens;
+        for (let i = 0; i < tokens.length; i++) {
+          portfolioTokenIndex.push(i);
+        }
+        // positionWrapperIndex.push(0);
+        // positionWrappers.push(ZERO_ADDRESS);
+        isExternalPosition = Array(tokens.length).fill(false);
+        // isTokenExternalPosition.push(false);
+        // index0.push(0);
+        // index1.push(0);
+        // amount0Min.push(0);
+        // amount1Min.push(0);
+        // fee.push(0);
+        // swapDeployer.push(ZERO_ADDRESS);
+        // tokenIn.push(ZERO_ADDRESS);
+        // tokenOut.push(ZERO_ADDRESS);
+        // amountIn.push(0);
       }
 
-      // Prepare permit data
-      const permit = {
-        details: tokenDetails,
-        spender: portfolio.portfolioAddress,
-        sigDeadline: toDeadline(1000 * 60 * 60 * 30),
-      };
+      const totalSupply = await portfolio.totalSupply();
+      let amount = ethers.utils.parseUnits("0.007", "ether");
+      let depositAmounts = [];
+      let postResponse = [];
 
-      setNotification('Preparing permit data...');
-      const { domain, types, values } = AllowanceTransfer.getPermitData(
-        permit,
-        PERMIT2_ADDRESS,
-        chainId
-      );
+      if (totalSupply.gt(0)) {
+        depositAmounts = await calculateWeightedDepositAmounts(
+          portfolio,
+          tokens,
+          vault,
+          amount
+        );
+      } else {
+        depositAmounts = divideAmountEqually(amount, tokens.length);
+        console.log(depositAmounts);
+      }
 
-      setNotification('Signing permit data...');
-      const signature = await signer._signTypedData(domain, types, values);
+      for (let i = 0; i < tokens.length; i++) {
+        let response = await createEnsoCallDataRoute(
+          depositBatch.address,
+          depositBatch.address,
+          "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          tokens[i],
+          depositAmounts[i].toString()
+        );
+        postResponse.push(response.data.tx.data);
+      }
+
+      console.log("------------- Executing Deposit Batch -------------");
 
       // Execute deposit
       setNotification('Executing deposit transaction...');
-      const depositTx = await portfolioContract.multiTokenDeposit(
-        amounts,
-        "0",
-        permit,
-        signature
+
+      const data = await depositBatch.connect(owner4).multiTokenSwapETHAndTransfer(
+        {
+          _minMintAmount: 0,
+          _depositAmount: amount.toString(),
+          _target: portfolio.address,
+          _depositToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          _callData: postResponse,
+        },
+        {
+          // Except Swap Tokens, Other Parameters are not used until we have a position manager
+          _positionWrappers: positionWrappers,
+          _swapTokens: swapTokens,
+          _positionWrapperIndex: positionWrapperIndex,
+          _portfolioTokenIndex: portfolioTokenIndex,
+          _index0: index0,
+          _index1: index1,
+          _amount0Min: amount0Min,
+          _amount1Min: amount1Min,
+          _isExternalPosition: isExternalPosition,
+          _swapDeployer: swapDeployer,
+          _tokenIn: tokenIn,
+          _tokenOut: tokenOut,
+          _amountIn: amountIn,
+          _deployer: ZERO_ADDRESS,
+          _fee: fee,
+        },
+        {
+          value: amount.toString(),
+        }
       );
+
+
 
       setNotification('Waiting for deposit transaction to be mined...');
       await depositTx.wait();
-      
+
       setNotification('Deposit completed successfully!');
       setSuccess(true);
     } catch (err) {
@@ -127,6 +186,191 @@ const DepositTokens = ({ portfolio }) => {
     }
   };
 
+  const isValidAddress = (address) => {
+    return (
+      address !== ZERO_ADDRESS &&
+      address.length === 42 && // Ethereum address length
+      address.startsWith("0x")
+    );
+  };
+
+  async function createEnsoCallDataRoute(
+    ensoHandler,
+    receiver,
+    _tokenIn,
+    _tokenOut,
+    _amountIn
+  ) {
+    const params = {
+      chainId: 56,
+      fromAddress: ensoHandler,
+      receiver: receiver,
+      spender: ensoHandler,
+      amountIn: _amountIn,
+      slippage: 700,
+      tokenIn: _tokenIn,
+      tokenOut: _tokenOut,
+      routingStrategy: "delegate-legacy",
+    };
+
+    console.log("params", params);
+
+    const postUrl = "https://api.enso.finance/api/v1/shortcuts/route?";
+
+    const headers = {
+      //"Content-Type": "application/json",
+      Authorization: import.meta.env.VITE_ENSO_KEY,
+    };
+
+    // console.log("URL", postUrl + `${qs.stringify(params)}`, {
+    //   headers,
+    // });
+
+    return await axios.get(postUrl + `${qs.stringify(params)}`, {
+      headers,
+    });
+  }
+
+  async function calculateWeightedDepositAmounts(
+    portfolio,
+    tokens,
+    vault,
+    depositAmount
+  ) {
+
+    const oracle = new ethers.Contract(priceOracleAddress, PRICE_ORACLE_ABI, signer);
+
+    const venusAssetHandler = new ethers.Contract(venusAssetHandlerAddress, VENUS_ASSET_HANDLER_ABI, signer);
+
+    // Get comptroller address
+    const comptrollerAddress = "0xfD36E2c2a6789Db23113685031d7F16329158384";
+
+    let ERC20 = new ethers.Contract(ERC20_ABI, signer);
+
+    // Get all account data in one call
+    const [accountData, tokenAddresses] =
+      await venusAssetHandler.callStatic.getUserAccountData(
+        vault,
+        comptrollerAddress,
+        []
+      );
+
+    const { lendTokens, borrowTokens } = tokenAddresses;
+    const vTokenSet = new Set(lendTokens);
+
+    // Convert totalDebt to 18 decimals (it's in 8 decimals from Venus)
+    const totalDebt18Decimals = accountData.totalDebt.mul(
+      ethers.BigNumber.from(10).pow(10)
+    );
+
+    // Process all tokens in parallel
+    const tokenProcessingPromises = tokens.map(async (token, i) => {
+      const balance = await ERC20.attach(token).balanceOf(vault);
+
+      if (vTokenSet.has(token)) {
+        // It's a vToken
+        const underlying = await venusAssetHandler.getUnderlyingToken(token);
+        const isCollateral = await venusAssetHandler.isCollateralEnabled(
+          token,
+          vault,
+          comptrollerAddress
+        );
+        // Calculate underlying amount directly using exchange rate
+        const vTokenContract = await ethers.getContractAt("IVenusPool", token);
+        const snapshot = await vTokenContract.getAccountSnapshot(vault);
+
+        // Destructure the snapshot result
+        const oErr = snapshot[0];
+        const vTokenBalance = snapshot[1];
+        const borrowBalance = snapshot[2];
+        const exchangeRateMantissa = snapshot[3];
+
+        // Calculate the underlying amount: underlyingAmount = vTokenBalance * exchangeRate / 1e18
+        const underlyingAmount = balance
+          .mul(exchangeRateMantissa)
+          .div(ethers.BigNumber.from(10).pow(18));
+
+        const usdValue = await oracle.convertToUSD18Decimals(
+          underlying,
+          underlyingAmount
+        );
+
+        // Return both USD value and collateral status
+        return { usdValue, isCollateral, tokenIndex: i };
+      } else {
+        // Regular token
+        const usdValue = await oracle.convertToUSD18Decimals(token, balance);
+        return { usdValue, isCollateral: false, tokenIndex: i };
+      }
+    });
+
+    const tokenResults = await Promise.all(tokenProcessingPromises);
+
+    // Extract USD values in the same order as portfolio.getTokens()
+    const tokenUSDValues = tokenResults.map((result) => result.usdValue);
+
+    // Identify collateral tokens by their original indices
+    const collateralTokenIndices = tokenResults
+      .map((result, i) => (result.isCollateral ? i : -1))
+      .filter((i) => i !== -1);
+
+    // Distribute debt among collateral tokens
+    const adjustedUSDValues = [...tokenUSDValues];
+    if (collateralTokenIndices.length > 0) {
+      const debtPerCollateralToken = totalDebt18Decimals.div(
+        collateralTokenIndices.length
+      );
+
+      for (const collateralIndex of collateralTokenIndices) {
+        adjustedUSDValues[collateralIndex] = adjustedUSDValues[
+          collateralIndex
+        ].sub(debtPerCollateralToken);
+      }
+    }
+
+    // Calculate total adjusted value
+    const totalAdjustedValue = adjustedUSDValues.reduce(
+      (sum, value) => sum.add(value),
+      ethers.BigNumber.from(0)
+    );
+
+    const depositAmounts = [];
+    for (let i = 0; i < tokens.length; i++) {
+      if (totalAdjustedValue.gt(0)) {
+        const weight = adjustedUSDValues[i]
+          .mul(ethers.BigNumber.from(10).pow(18))
+          .div(totalAdjustedValue);
+        const tokenDepositAmount = depositAmount
+          .mul(weight)
+          .div(ethers.BigNumber.from(10).pow(18));
+        depositAmounts.push(tokenDepositAmount);
+      } else {
+        depositAmounts.push(depositAmount.div(tokens.length));
+      }
+    }
+
+    console.log("Portfolio Tokens (in order):", tokens);
+    console.log(
+      "Original USD Values (in order):",
+      tokenUSDValues.map((v) => ethers.utils.formatEther(v))
+    );
+    console.log(
+      "Adjusted USD Values (in order):",
+      adjustedUSDValues.map((v) => ethers.utils.formatEther(v))
+    );
+    console.log("Collateral Token Indices:", collateralTokenIndices);
+    console.log(
+      "Total Debt (18 decimals):",
+      ethers.utils.formatEther(totalDebt18Decimals)
+    );
+    console.log(
+      "Deposit Amounts:",
+      depositAmounts.map((a) => ethers.utils.formatEther(a))
+    );
+
+    return depositAmounts;
+  }
+
   return (
     <div className="deposit-tokens">
       <button
@@ -136,20 +380,20 @@ const DepositTokens = ({ portfolio }) => {
       >
         {loading ? 'Processing Deposit...' : 'Deposit Tokens'}
       </button>
-      
+
       {notification && (
         <div className="notification">
           <p>{notification}</p>
         </div>
       )}
-      
+
       {error && (
         <div className="error">
           <p>{error}</p>
           <button onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
-      
+
       {success && (
         <div className="success">
           <p>Tokens deposited successfully!</p>
