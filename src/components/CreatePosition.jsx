@@ -59,6 +59,12 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
             const portfolioInfo = await response.json();
             console.log("Portfolio info:", portfolioInfo);
 
+            const portfolioContract = new ethers.Contract(
+                portfolioAddress,
+                PORTFOLIO_ABI,
+                signer
+            );
+
             // Attach to AssetManagementConfig
             const assetManagementConfig = new ethers.Contract(
                 portfolioInfo.assetManagementConfig,
