@@ -1,11 +1,19 @@
 .deposit-wbnb {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 1rem;
-  padding: 1rem;
-  max-width: 500px;
-  margin: 0 auto;
+  padding: 0;
+  max-width: none;
+  margin: 0;
+  width: 100%;
+}
+
+.deposit-wbnb h4 {
+  margin: 0 0 1rem 0;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
 }
 
 .input-group {
@@ -17,15 +25,24 @@
   width: 100%;
   padding: 0.75rem;
   padding-right: 4rem;
-  border: 1px solid #ccc;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.2s;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #333;
+  font-weight: 500;
+}
+
+.wbnb-input::placeholder {
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .wbnb-input:focus {
   outline: none;
-  border-color: #4a90e2;
+  border-color: #646cff;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
 .input-suffix {
@@ -35,62 +52,66 @@
   transform: translateY(-50%);
   color: #666;
   font-size: 0.9rem;
+  font-weight: 500;
+  pointer-events: none;
 }
 
 .deposit-button {
   width: 100%;
   padding: 0.75rem;
-  background-color: #4a90e2;
+  background-color: #646cff;
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-weight: 600;
+  min-height: 48px;
 }
 
 .deposit-button:hover {
-  background-color: #357abd;
+  background-color: #535bf2;
 }
 
 .deposit-button:disabled {
-  background-color: #ccc;
+  background-color: #6c757d;
   cursor: not-allowed;
 }
 
 .notification {
   width: 100%;
   padding: 1rem;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background-color: rgba(33, 150, 243, 0.1);
+  border: 1px solid rgba(33, 150, 243, 0.3);
   border-radius: 8px;
   margin-top: 1rem;
   text-align: center;
   font-size: 0.9rem;
-  color: #495057;
+  color: #90caf9;
   animation: fadeIn 0.3s ease-in-out;
 }
 
 .error {
   width: 100%;
   padding: 1rem;
-  background-color: #fff3f3;
-  border: 1px solid #ffcdd2;
+  background-color: rgba(211, 47, 47, 0.1);
+  border: 1px solid rgba(211, 47, 47, 0.3);
   border-radius: 8px;
   margin-top: 1rem;
   text-align: center;
-  color: #d32f2f;
+  color: #ef5350;
 }
 
 .success {
   width: 100%;
   padding: 1rem;
-  background-color: #f1f8e9;
-  border: 1px solid #c5e1a5;
+  background-color: rgba(46, 125, 50, 0.1);
+  border: 1px solid rgba(46, 125, 50, 0.3);
   border-radius: 8px;
   margin-top: 1rem;
   text-align: center;
-  color: #2e7d32;
+  color: #81c784;
 }
 
 @keyframes fadeIn {

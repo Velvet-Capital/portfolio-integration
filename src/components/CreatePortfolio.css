@@ -1,11 +1,147 @@
+.create-portfolio {
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-top: 1rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.create-portfolio h2 {
+  margin: 0 0 1.5rem 0;
+  color: #ffffff;
+  text-align: center;
+}
+
+.portfolio-management {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.portfolio-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 2px solid rgba(100, 108, 255, 0.3);
+  margin-bottom: 2rem;
+}
+
+.portfolio-info h3 {
+  margin: 0 0 1rem 0;
+  color: #646cff;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.portfolio-info p {
+  margin: 0.5rem 0;
+  color: #ffffff;
+  font-size: 0.9rem;
+  word-break: break-all;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.portfolio-info p:first-of-type {
+  background: rgba(100, 108, 255, 0.2);
+  border: 2px solid rgba(100, 108, 255, 0.5);
+  font-weight: bold;
+  font-size: 1rem;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  margin: 0;
+}
+
+.portfolio-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Consistent section styling */
+.portfolio-actions > div {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Override individual component styles for consistency */
+.portfolio-actions .init-token,
+.portfolio-actions .wbnb-approval,
+.portfolio-actions .deposit-wbnb,
+.portfolio-actions .withdraw-wbnb {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Ensure all buttons take full width */
+.portfolio-actions button,
+.portfolio-actions .add-btn,
+.portfolio-actions .init-btn,
+.portfolio-actions .approve-button,
+.portfolio-actions .deposit-button,
+.portfolio-actions .withdraw-input button {
+  width: 100% !important;
+  min-height: 48px !important;
+}
+
 .user-address {
-  color: #666;
+  color: #ffffff;
   font-size: 0.9rem;
   margin-bottom: 1rem;
   padding: 0.5rem;
-  background-color: #f5f5f5;
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   word-break: break-all;
+  text-align: center;
+}
+
+.address-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.address-container p {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.copy-button {
+  padding: 0.5rem 1rem;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.copy-button:hover {
+  background-color: #535bf2;
+}
+
+.copy-button:active {
+  background-color: #4a4a4a;
 }
 
 .init-token {
@@ -92,4 +228,19 @@
 .init-token .success button:hover {
   background-color: currentColor;
   color: white;
+}
+
+.connect-prompt {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 2px solid rgba(100, 108, 255, 0.3);
+}
+
+.connect-prompt p {
+  color: #ffffff;
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 500;
 } 
