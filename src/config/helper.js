@@ -1,22 +1,34 @@
-import {
-  PERMIT2_ADDRESS,
-  AllowanceTransfer,
-} from "@uniswap/permit2-sdk";
+import { PERMIT2_ADDRESS, AllowanceTransfer } from "@uniswap/permit2-sdk";
 
 import axios from "axios";
 import qs from "qs";
 
 import { BigNumber, Contract, Signer } from "ethers";
 
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
-import { PORTFOLIO_ABI, IAllowanceTransfer, POSITION_WRAPPER_ABI, PORTFOLIO_CALCULATIONS_ABI, ERC20_ABI, AMOUNT_CALCULATIONS_ALGEBRA_ABI, tokenBalanceLibraryAddress, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ALGEBRA_ABI, EXTERNAL_POSITION_STORAGE_ABI, PRICE_ORACLE_ABI, VENUS_ASSET_HANDLER_ABI, venusAssetHandlerAddress, VENUS_TOKEN_ABI } from "./contracts";
+import {
+  PORTFOLIO_ABI,
+  IAllowanceTransfer,
+  POSITION_WRAPPER_ABI,
+  PORTFOLIO_CALCULATIONS_ABI,
+  ERC20_ABI,
+  AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+  tokenBalanceLibraryAddress,
+  ASSET_MANAGEMENT_CONFIG_ABI,
+  POSITION_MANAGER_ALGEBRA_ABI,
+  EXTERNAL_POSITION_STORAGE_ABI,
+  PRICE_ORACLE_ABI,
+  VENUS_ASSET_HANDLER_ABI,
+  venusAssetHandlerAddress,
+  VENUS_TOKEN_ABI,
+} from "./contracts.js";
 
 const MaxUint128 = ethers.BigNumber.from("0xffffffffffffffffffffffffffffffff");
 
-const provider = new ethers.providers.JsonRpcProvider(import.meta.env.VITE_RPC_URL);
-
-
+const provider = new ethers.providers.JsonRpcProvider(
+  import.meta.env.VITE_RPC_URL
+);
 
 // Constants
 const CHAIN_ID = 56;
@@ -42,11 +54,19 @@ export async function getPermitSignature(
   chainId
 ) {
   // Get tokens from portfolio
-  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const portfolio = new ethers.Contract(
+    portfolioAddress,
+    PORTFOLIO_ABI,
+    provider
+  );
   const tokens = await portfolio.getTokens();
 
   // Get permit2 contract
-  const permit2 = new ethers.Contract(PERMIT2_ADDRESS, AllowanceTransfer.abi, provider);
+  const permit2 = new ethers.Contract(
+    PERMIT2_ADDRESS,
+    AllowanceTransfer.abi,
+    provider
+  );
 
   // Create token details
   let tokenDetails = [];
@@ -102,7 +122,11 @@ async function getDepositAmounts(
     splitAmounts = splitEqually(BigNumber.from(depositAmount), numTokens);
   } else {
     // Add Venus borrowing logic
-    const venusAssetHandler = new ethers.Contract(venusAssetHandlerAddress, VENUS_ASSET_HANDLER_ABI, provider);
+    const venusAssetHandler = new ethers.Contract(
+      venusAssetHandlerAddress,
+      VENUS_ASSET_HANDLER_ABI,
+      provider
+    );
 
     // Get comptroller address
     const comptrollerAddress = "0xfD36E2c2a6789Db23113685031d7F16329158384";
@@ -126,7 +150,7 @@ async function getDepositAmounts(
     let usdBalances = [];
     let totalUsd = BigNumber.from(0);
     let collateralTokenIndices = [];
-    console.log("**********step 3 done*****************")
+    console.log("**********step 3 done*****************");
     for (let i = 0; i < numTokens; i++) {
       const token = tokens[i];
       if (reinvestmentSwapInfo.isTokenExternalPosition[i]) {
@@ -136,7 +160,11 @@ async function getDepositAmounts(
           amountCalculationsAddress,
           "10000" // 100% in 1e18 precision
         );
-        const positionWrapper = new ethers.Contract(token, POSITION_WRAPPER_ABI, provider);
+        const positionWrapper = new ethers.Contract(
+          token,
+          POSITION_WRAPPER_ABI,
+          provider
+        );
         const token0 = await positionWrapper.token0();
         const token1 = await positionWrapper.token1();
         const usd0 = await getTokenUsdValue(
@@ -152,7 +180,7 @@ async function getDepositAmounts(
         const usdSum = usd0.add(usd1);
         usdBalances.push(usdSum);
         totalUsd = totalUsd.add(usdSum);
-        console.log("*******************step 4 done*******************")
+        console.log("*******************step 4 done*******************");
         // External positions are typically not used as collateral
       } else if (vTokenSet.has(token)) {
         // It's a vToken - check if it's collateral
@@ -166,14 +194,18 @@ async function getDepositAmounts(
         const bal = await erc20.balanceOf(vaultAddress);
 
         // Calculate underlying amount using exchange rate
-        const vTokenContract = new ethers.Contract(token, VENUS_TOKEN_ABI, provider);
+        const vTokenContract = new ethers.Contract(
+          token,
+          VENUS_TOKEN_ABI,
+          provider
+        );
         const snapshot = await vTokenContract.getAccountSnapshot(vaultAddress);
         const exchangeRateMantissa = snapshot[3];
         const underlyingAmount = bal
           .mul(exchangeRateMantissa)
           .div(ethers.BigNumber.from(10).pow(18));
         let underlying;
-        if (token == "0xA07c5b74C9B40447a954e1466938b865b6BBea36") { 
+        if (token == "0xA07c5b74C9B40447a954e1466938b865b6BBea36") {
           underlying = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
         } else {
           underlying = await venusAssetHandler.getUnderlyingToken(token);
@@ -244,7 +276,11 @@ async function getDepositAmounts(
     const token = tokens[i];
     const splitAmount = splitAmounts[i];
     if (reinvestmentSwapInfo.isTokenExternalPosition[i]) {
-      const positionWrapper = new ethers.Contract(token, POSITION_WRAPPER_ABI, provider);
+      const positionWrapper = new ethers.Contract(
+        token,
+        POSITION_WRAPPER_ABI,
+        provider
+      );
       const token0 = await positionWrapper.token0();
       const token1 = await positionWrapper.token1();
       const { amount0USD, amount1USD } = await getCurrentRatio(
@@ -301,9 +337,13 @@ export async function createDepositBatchDataWithEnso(
     amountCalculationAddress
   );
 
-  console.log("*****************step 1 done*********************")
+  console.log("*****************step 1 done*********************");
 
-  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const portfolio = new ethers.Contract(
+    portfolioAddress,
+    PORTFOLIO_ABI,
+    provider
+  );
   const tokens = await portfolio.getTokens();
 
   // Use helper to get split amounts
@@ -315,8 +355,7 @@ export async function createDepositBatchDataWithEnso(
     amountCalculationAddress,
     reinvestmentSwapInfo
   );
-  console.log("*****************step 2 done*********************")
-
+  console.log("*****************step 2 done*********************");
 
   let ensoCalldata = await createEnsoCalldataDeposit(
     depositBatchAddress,
@@ -418,8 +457,11 @@ export async function getWithdrawalAmounts(
   portfolioAddress,
   portfolioTokenWithdrawAmount
 ) {
-
-  let portfolioCalculations = new ethers.Contract(portfolioCalculationsAddress, PORTFOLIO_CALCULATIONS_ABI, provider);
+  let portfolioCalculations = new ethers.Contract(
+    portfolioCalculationsAddress,
+    PORTFOLIO_CALCULATIONS_ABI,
+    provider
+  );
   let withdrawalAmounts =
     await portfolioCalculations.callStatic.getWithdrawalAmounts(
       portfolioTokenWithdrawAmount,
@@ -437,13 +479,21 @@ export async function getSwapAmountsForExternalPosition(
   positionWrappers,
   withdrawalAmounts
 ) {
-  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const portfolio = new ethers.Contract(
+    portfolioAddress,
+    PORTFOLIO_ABI,
+    provider
+  );
   const tokens = await portfolio.getTokens();
 
   let swapAmounts = [];
   let wrapperIndex = 0;
 
-  const amountCalculationsAlgebra = new ethers.Contract(amountCalculationsAddress, AMOUNT_CALCULATIONS_ALGEBRA_ABI, provider);
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
+  );
 
   for (let i = 0; i < tokens.length; i++) {
     if (!isTokenExternalPosition[i]) {
@@ -486,7 +536,11 @@ export async function calculateOutputAmounts(
   amountCalculationsAddress,
   _percentage
 ) {
-  const amountCalculationsAlgebra = new ethers.Contract(amountCalculationsAddress, AMOUNT_CALCULATIONS_ALGEBRA_ABI, provider);
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
+  );
 
   let result =
     await amountCalculationsAlgebra.callStatic.getLiquidityAmountsForPartialWithdrawal(
@@ -514,19 +568,32 @@ export async function getReinvestmentSwapInfo(
     priceOracleAddress
   );
 
+  console.log("expectedFees", expectedFees);
+
   const currentRatioAmounts = await getCurrentRatio(
     position,
     priceOracleAddress,
     amountCalculationsAddress
   );
 
+  console.log("currentRatioAmounts", currentRatioAmounts);
+
   // Get token addresses
-  const positionWrapper = new ethers.Contract(position, POSITION_WRAPPER_ABI, provider);
+  const positionWrapper = new ethers.Contract(
+    position,
+    POSITION_WRAPPER_ABI,
+    provider
+  );
   const token0 = await positionWrapper.token0();
   const token1 = await positionWrapper.token1();
 
-  // Calculate the amount to swap
+  console.log("token0", token0);
+  console.log("token1", token1);
+
+  // Calculate the amount to swap using USD amounts for ratios and token amounts for swap calculation
   return getSwapInfoToDesiredRatioBN(
+    expectedFees.tokenBalance0,
+    expectedFees.tokenBalance1,
     expectedFees.amount0USD,
     expectedFees.amount1USD,
     currentRatioAmounts.amount0USD,
@@ -537,6 +604,8 @@ export async function getReinvestmentSwapInfo(
 }
 
 function getSwapInfoToDesiredRatioBN(
+  tokenBalance0,
+  tokenBalance1,
   feeAmount0USD,
   feeAmount1USD,
   desiredAmount0USD,
@@ -545,6 +614,8 @@ function getSwapInfoToDesiredRatioBN(
   token1
 ) {
   const scale = BigNumber.from("1000000000000000000"); // 1e18
+
+  // Early exit if no balances
   if (feeAmount0USD.eq(0) && feeAmount1USD.eq(0)) {
     return {
       swapAmount: BigNumber.from(0),
@@ -552,13 +623,17 @@ function getSwapInfoToDesiredRatioBN(
       tokenOut: ethers.constants.AddressZero,
     };
   }
+
   const totalFee = feeAmount0USD.add(feeAmount1USD);
   const totalDesired = desiredAmount0USD.add(desiredAmount1USD);
-  // Calculate ratios as scaled integers
+
+  // Calculate current and desired ratios (scaled by 1e18 for precision)
   const currentRatio = feeAmount0USD.mul(scale).div(totalFee);
   const desiredRatio = desiredAmount0USD.mul(scale).div(totalDesired);
-  if (currentRatio.sub(desiredRatio).abs().lt(1000)) {
-    // ~1e-15 tolerance
+
+  // Check if already at desired ratio (with small tolerance)
+  if (currentRatio.sub(desiredRatio).abs().lt(scale.div(1000))) {
+    // 0.1% tolerance
     return {
       swapAmount: BigNumber.from(0),
       tokenIn: ethers.constants.AddressZero,
@@ -566,54 +641,105 @@ function getSwapInfoToDesiredRatioBN(
       note: "Already at desired ratio",
     };
   }
-  // Calculate and log ratios for debugging
+
+  // Calculate ratios as percentages for logging
   const currentRatioPercent = currentRatio.mul(100).div(scale);
   const desiredRatioPercent = desiredRatio.mul(100).div(scale);
-  console.log(`Current ratio: ${currentRatioPercent.toString()}%`);
-  console.log(`Desired ratio: ${desiredRatioPercent.toString()}%`);
+
+  console.log(`Current ratio: ${currentRatioPercent.toString()}% token0`);
+  console.log(`Desired ratio: ${desiredRatioPercent.toString()}% token0`);
   console.log(
-    `Current amounts: ${feeAmount0USD.toString()} token0, ${feeAmount1USD.toString()} token1`
+    `Current USD amounts: ${feeAmount0USD.toString()} token0, ${feeAmount1USD.toString()} token1`
   );
   console.log(
-    `Desired amounts: ${desiredAmount0USD.toString()} token0, ${desiredAmount1USD.toString()} token1`
+    `Desired USD amounts: ${desiredAmount0USD.toString()} token0, ${desiredAmount1USD.toString()} token1`
+  );
+  console.log(
+    `Current token amounts: ${tokenBalance0.toString()} token0, ${tokenBalance1.toString()} token1`
   );
 
-  if (currentRatio.lt(desiredRatio)) {
-    // Need to buy token0 (swap token1 for token0)
-    // Calculate how much token1 to sell to achieve desired ratio
-    const totalAmount = feeAmount0USD.add(feeAmount1USD);
-    const currentToken1Percent = BigNumber.from(100).sub(currentRatioPercent);
-    const desiredToken1Percent = BigNumber.from(100).sub(desiredRatioPercent);
-    const token1ReductionPercent =
-      currentToken1Percent.sub(desiredToken1Percent);
-    let swapAmount = totalAmount.mul(token1ReductionPercent).div(100);
+  // Calculate what we should have based on current total and desired ratio
+  const totalCurrentUSD = feeAmount0USD.add(feeAmount1USD);
+  const targetToken0USD = totalCurrentUSD.mul(desiredRatio).div(scale);
+  const targetToken1USD = totalCurrentUSD.sub(targetToken0USD);
 
-    console.log(
-      `Token1 reduction percent: ${token1ReductionPercent.toString()}`
-    );
-    console.log(`Calculated swap amount: ${swapAmount.toString()}`);
-    console.log(`Available balance: ${feeAmount1USD.toString()}`);
-    const swapPercentage = swapAmount.mul(100).div(feeAmount1USD);
-    console.log(
-      `Swap amount is ${swapPercentage.toString()}% of available balance`
-    );
+  console.log(
+    `Target USD amounts: ${targetToken0USD.toString()} token0, ${targetToken1USD.toString()} token1`
+  );
+
+  // Determine which token has excess and needs to be sold
+  const excessToken0USD = feeAmount0USD.sub(targetToken0USD);
+  const excessToken1USD = feeAmount1USD.sub(targetToken1USD);
+
+  console.log(`Token0 excess USD: ${excessToken0USD.toString()}`);
+  console.log(`Token1 excess USD: ${excessToken1USD.toString()}`);
+
+  if (excessToken0USD.gt(0)) {
+    // Token0 has excess, need to sell token0 for token1
+    console.log(`Selling token0 to buy token1`);
+
+    // Calculate swap amount: (excess_usd / current_usd) × tokenBalance
+    let swapAmount = excessToken0USD.mul(tokenBalance0).div(feeAmount0USD);
+
+    console.log(`Calculated swap amount: ${swapAmount.toString()} token0`);
+    console.log(`Available token0 balance: ${tokenBalance0.toString()}`);
 
     // Check if swap amount exceeds available balance
-    if (swapAmount.gt(feeAmount1USD)) {
-      swapAmount = feeAmount1USD; // Cap at available balance
+    if (swapAmount.gt(tokenBalance0)) {
+      swapAmount = tokenBalance0; // Cap at available balance
       console.log(`Capped swap amount: ${swapAmount.toString()}`);
       console.log(
         `Note: Cannot achieve full desired ratio with available balance`
       );
     }
 
-    // Calculate what the ratio would be after swap
-    const newToken0Amount = feeAmount0USD.add(swapAmount);
-    const newToken1Amount = feeAmount1USD.sub(swapAmount);
-    const newTotal = newToken0Amount.add(newToken1Amount);
-    const newRatio = newToken0Amount.mul(scale).div(newTotal);
+    // Calculate expected ratio after swap
+    const swapUSDValue = swapAmount.mul(feeAmount0USD).div(tokenBalance0);
+    const newToken0USD = feeAmount0USD.sub(swapUSDValue);
+    const newToken1USD = feeAmount1USD.add(swapUSDValue);
+    const newTotal = newToken0USD.add(newToken1USD);
+    const newRatio = newToken0USD.mul(scale).div(newTotal);
     const newRatioPercent = newRatio.mul(100).div(scale);
-    console.log(`After swap ratio: ${newRatioPercent.toString()}%`);
+
+    console.log(
+      `Expected ratio after swap: ${newRatioPercent.toString()}% token0`
+    );
+
+    return {
+      swapAmount,
+      tokenIn: token0,
+      tokenOut: token1,
+    };
+  } else if (excessToken1USD.gt(0)) {
+    // Token1 has excess, need to sell token1 for token0
+    console.log(`Selling token1 to buy token0`);
+
+    // Calculate swap amount: (excess_usd / current_usd) × tokenBalance
+    let swapAmount = excessToken1USD.mul(tokenBalance1).div(feeAmount1USD);
+
+    console.log(`Calculated swap amount: ${swapAmount.toString()} token1`);
+    console.log(`Available token1 balance: ${tokenBalance1.toString()}`);
+
+    // Check if swap amount exceeds available balance
+    if (swapAmount.gt(tokenBalance1)) {
+      swapAmount = tokenBalance1; // Cap at available balance
+      console.log(`Capped swap amount: ${swapAmount.toString()}`);
+      console.log(
+        `Note: Cannot achieve full desired ratio with available balance`
+      );
+    }
+
+    // Calculate expected ratio after swap
+    const swapUSDValue = swapAmount.mul(feeAmount1USD).div(tokenBalance1);
+    const newToken0USD = feeAmount0USD.add(swapUSDValue);
+    const newToken1USD = feeAmount1USD.sub(swapUSDValue);
+    const newTotal = newToken0USD.add(newToken1USD);
+    const newRatio = newToken0USD.mul(scale).div(newTotal);
+    const newRatioPercent = newRatio.mul(100).div(scale);
+
+    console.log(
+      `Expected ratio after swap: ${newRatioPercent.toString()}% token0`
+    );
 
     return {
       swapAmount,
@@ -621,46 +747,12 @@ function getSwapInfoToDesiredRatioBN(
       tokenOut: token0,
     };
   } else {
-    // Need to buy token1 (swap token0 for token1)
-    // Calculate how much token0 to sell to achieve desired ratio
-    const totalAmount = feeAmount0USD.add(feeAmount1USD);
-    const currentToken0Percent = currentRatioPercent;
-    const desiredToken0Percent = desiredRatioPercent;
-    const token0ReductionPercent =
-      currentToken0Percent.sub(desiredToken0Percent);
-    let swapAmount = totalAmount.mul(token0ReductionPercent).div(100);
-
-    console.log(
-      `Token0 reduction percent: ${token0ReductionPercent.toString()}`
-    );
-    console.log(`Calculated swap amount: ${swapAmount.toString()}`);
-    console.log(`Available balance: ${feeAmount0USD.toString()}`);
-    const swapPercentage = swapAmount.mul(100).div(feeAmount0USD);
-    console.log(
-      `Swap amount is ${swapPercentage.toString()}% of available balance`
-    );
-
-    // Check if swap amount exceeds available balance
-    if (swapAmount.gt(feeAmount0USD)) {
-      swapAmount = feeAmount0USD; // Cap at available balance
-      console.log(`Capped swap amount: ${swapAmount.toString()}`);
-      console.log(
-        `Note: Cannot achieve full desired ratio with available balance`
-      );
-    }
-
-    // Calculate what the ratio would be after swap
-    const newToken0Amount = feeAmount0USD.sub(swapAmount);
-    const newToken1Amount = feeAmount1USD.add(swapAmount);
-    const newTotal = newToken0Amount.add(newToken1Amount);
-    const newRatio = newToken0Amount.mul(scale).div(newTotal);
-    const newRatioPercent = newRatio.mul(100).div(scale);
-    console.log(`After swap ratio: ${newRatioPercent.toString()}%`);
-
+    // This shouldn't happen if we passed the tolerance check
     return {
-      swapAmount,
-      tokenIn: token0,
-      tokenOut: token1,
+      swapAmount: BigNumber.from(0),
+      tokenIn: ethers.constants.AddressZero,
+      tokenOut: ethers.constants.AddressZero,
+      note: "No excess found",
     };
   }
 }
@@ -669,7 +761,11 @@ export async function getExpectedFeesExternalPosition(
   position,
   priceOracleAddress
 ) {
-  const positionWrapper = new ethers.Contract(position, POSITION_WRAPPER_ABI, provider);
+  const positionWrapper = new ethers.Contract(
+    position,
+    POSITION_WRAPPER_ABI,
+    provider
+  );
 
   const nftManagerAbi = [
     // Only include the functions you need
@@ -687,9 +783,15 @@ export async function getExpectedFeesExternalPosition(
   const tokenId = await positionWrapper.tokenId();
   let amount0USD = BigNumber.from(0);
   let amount1USD = BigNumber.from(0);
+  let tokenBalance0 = BigNumber.from(0);
+  let tokenBalance1 = BigNumber.from(0);
 
   if (Number(BigNumber.from(tokenId)) != 0) {
-    const positionWrapper = new ethers.Contract(position, POSITION_WRAPPER_ABI, provider);
+    const positionWrapper = new ethers.Contract(
+      position,
+      POSITION_WRAPPER_ABI,
+      provider
+    );
 
     let positionManagerAddress = await positionWrapper.parentPositionManager();
 
@@ -712,24 +814,39 @@ export async function getExpectedFeesExternalPosition(
         value: 0,
       });
 
-    const contractBalanceT0 = await new ethers.Contract(await positionWrapper.token0(), ERC20_ABI, provider).balanceOf(positionManagerAddress);
-    const contractBalanceT1 =await  new ethers.Contract(await positionWrapper.token1(), ERC20_ABI, provider).balanceOf(positionManagerAddress);
+    const contractBalanceT0 = await new ethers.Contract(
+      await positionWrapper.token0(),
+      ERC20_ABI,
+      provider
+    ).balanceOf(positionManagerAddress);
+    const contractBalanceT1 = await new ethers.Contract(
+      await positionWrapper.token1(),
+      ERC20_ABI,
+      provider
+    ).balanceOf(positionManagerAddress);
+
+    tokenBalance0 = BigNumber.from(amount0).add(contractBalanceT0);
+
+    tokenBalance1 = BigNumber.from(amount1).add(contractBalanceT1);
+
+    console.log("tokenBalance0 actual balance", tokenBalance0.toString());
+    console.log("tokenBalance1 actual balance", tokenBalance1.toString());
 
     // Convert amount0, amount1 to USD (here we use stable coins for testing so we can skip)
     amount0USD = await getTokenUsdValue(
       await positionWrapper.token0(),
       priceOracleAddress,
-      BigNumber.from(amount0).add(contractBalanceT0).toString()
+      tokenBalance0
     );
 
     amount1USD = await getTokenUsdValue(
       await positionWrapper.token1(),
       priceOracleAddress,
-      BigNumber.from(amount1).add(contractBalanceT1).toString()
+      tokenBalance1
     );
   }
 
-  return { amount0USD, amount1USD };
+  return { tokenBalance0, tokenBalance1, amount0USD, amount1USD };
 }
 
 export async function getCurrentRatio(
@@ -737,9 +854,17 @@ export async function getCurrentRatio(
   priceOracleAddress,
   amountCalculationsAddress
 ) {
-  const amountCalculationsAlgebra = new ethers.Contract(amountCalculationsAddress, AMOUNT_CALCULATIONS_ALGEBRA_ABI, provider);
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
+  );
 
-  const positionWrapper = new ethers.Contract(position, POSITION_WRAPPER_ABI, provider);
+  const positionWrapper = new ethers.Contract(
+    position,
+    POSITION_WRAPPER_ABI,
+    provider
+  );
 
   // Get amounts for new price range (to calculate the ratio)
   let amounts =
@@ -796,21 +921,36 @@ export async function getExternalPositionData(
   let amountsMin0 = [];
   let amountsMin1 = [];
 
-
-  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const portfolio = new ethers.Contract(
+    portfolioAddress,
+    PORTFOLIO_ABI,
+    provider
+  );
   const tokens = await portfolio.getTokens();
 
   const config = await portfolio.assetManagementConfig();
 
-  const assetManagementConfig = new ethers.Contract(config, ASSET_MANAGEMENT_CONFIG_ABI, provider);
+  const assetManagementConfig = new ethers.Contract(
+    config,
+    ASSET_MANAGEMENT_CONFIG_ABI,
+    provider
+  );
 
   let positionManagerAddress =
     await assetManagementConfig.lastDeployedPositionManager();
 
   if (positionManagerAddress != undefined) {
-    const positionManager = new ethers.Contract(positionManagerAddress, POSITION_MANAGER_ALGEBRA_ABI, provider);
+    const positionManager = new ethers.Contract(
+      positionManagerAddress,
+      POSITION_MANAGER_ALGEBRA_ABI,
+      provider
+    );
 
-    const externalPositionStorage = new ethers.Contract(await positionManager.externalPositionStorage(), EXTERNAL_POSITION_STORAGE_ABI, provider);
+    const externalPositionStorage = new ethers.Contract(
+      await positionManager.externalPositionStorage(),
+      EXTERNAL_POSITION_STORAGE_ABI,
+      provider
+    );
 
     for (let i = 0; i < tokens.length; i++) {
       if (await externalPositionStorage.isWrappedPosition(tokens[i])) {
@@ -824,7 +964,11 @@ export async function getExternalPositionData(
         index1.push(indexCounter);
 
         // Push underlying tokens to the swap token list
-        const positionWrapper = new ethers.Contract(tokens[i], POSITION_WRAPPER_ABI, provider);
+        const positionWrapper = new ethers.Contract(
+          tokens[i],
+          POSITION_WRAPPER_ABI,
+          provider
+        );
         swapTokens.push(
           await positionWrapper.token0(),
           await positionWrapper.token1()
@@ -895,7 +1039,7 @@ export async function createEnsoCallDataRoute(
     tokenOut: _tokenOut,
     routingStrategy: "delegate",
   };
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   const postUrl = "https://api.enso.finance/api/v1/shortcuts/route?";
 
   const headers = {
@@ -914,7 +1058,11 @@ export async function getTokenUsdValue(
   priceOracleAddress,
   amount
 ) {
-  const priceOracle = new ethers.Contract(priceOracleAddress, PRICE_ORACLE_ABI, provider);
+  const priceOracle = new ethers.Contract(
+    priceOracleAddress,
+    PRICE_ORACLE_ABI,
+    provider
+  );
 
   return await priceOracle.convertToUSD18Decimals(tokenAddress, amount);
 }
@@ -964,6 +1112,9 @@ export function testSwapAmountCalculationPrecise() {
   console.log("Swap Amount:", result1.swapAmount.toString());
   console.log("Token In:", result1.tokenIn);
   console.log("Token Out:", result1.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result1.expectedRatioAfterSwap.token0Percent}% token0, ${result1.expectedRatioAfterSwap.token1Percent}% token1`
+  );
 
   // Example 2: Buy token1 (swap token0 for token1)
   // Current: 70/30, Desired: 30/70
@@ -988,6 +1139,9 @@ export function testSwapAmountCalculationPrecise() {
   console.log("Swap Amount:", result2.swapAmount.toString());
   console.log("Token In:", result2.tokenIn);
   console.log("Token Out:", result2.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result2.expectedRatioAfterSwap.token0Percent}% token0, ${result2.expectedRatioAfterSwap.token1Percent}% token1`
+  );
 
   // Example 3: Small precision test
   console.log("\n--- Example 3: Small Precision Test ---");
@@ -1014,6 +1168,9 @@ export function testSwapAmountCalculationPrecise() {
   console.log("Swap Amount:", result3.swapAmount.toString());
   console.log("Token In:", result3.tokenIn);
   console.log("Token Out:", result3.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result3.expectedRatioAfterSwap.token0Percent}% token0, ${result3.expectedRatioAfterSwap.token1Percent}% token1`
+  );
 
   // Example 4: Very small values
   console.log("\n--- Example 4: Very Small Values ---");
@@ -1037,6 +1194,9 @@ export function testSwapAmountCalculationPrecise() {
   console.log("Swap Amount:", result4.swapAmount.toString());
   console.log("Token In:", result4.tokenIn);
   console.log("Token Out:", result4.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result4.expectedRatioAfterSwap.token0Percent}% token0, ${result4.expectedRatioAfterSwap.token1Percent}% token1`
+  );
 
   // Example 5: Real fee values
   console.log("\n--- Example 5: Real Fee Values ---");
@@ -1065,6 +1225,9 @@ export function testSwapAmountCalculationPrecise() {
   console.log("Swap Amount:", result5.swapAmount.toString());
   console.log("Token In:", result5.tokenIn);
   console.log("Token Out:", result5.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result5.expectedRatioAfterSwap.token0Percent}% token0, ${result5.expectedRatioAfterSwap.token1Percent}% token1`
+  );
 
   // Example 6: Micro amounts
   console.log("\n--- Example 6: Micro Amounts ---");
@@ -1091,6 +1254,71 @@ export function testSwapAmountCalculationPrecise() {
   console.log("Swap Amount:", result6.swapAmount.toString());
   console.log("Token In:", result6.tokenIn);
   console.log("Token Out:", result6.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result6.expectedRatioAfterSwap.token0Percent}% token0, ${result6.expectedRatioAfterSwap.token1Percent}% token1`
+  );
+
+  // Example 7: Real values from user
+  console.log("\n--- Example 7: Real User Values ---");
+  const feeAmount0USD_7 = BigNumber.from("875189502145937"); // Real fee token0 (ETH)
+  const feeAmount1USD_7 = BigNumber.from("4129712983430202"); // Real fee token1 (WBNB)
+  const desiredAmount0USD_7 = BigNumber.from("1000000000000000000"); // 1 token0 (desired)
+  const desiredAmount1USD_7 = BigNumber.from("1000000000000000000"); // 1 token1 (desired)
+
+  const result7 = getSwapInfoToDesiredRatioBN(
+    feeAmount0USD_7,
+    feeAmount1USD_7,
+    desiredAmount0USD_7,
+    desiredAmount1USD_7,
+    "0x2170Ed0880ac9A755fd29B2688956BD959F933F8", // ETH token0
+    "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" // WBNB token1
+  );
+
+  console.log("Current: 875189502145937 ETH, 4129712983430202 WBNB");
+  console.log("Desired: 1000000000000000000 ETH, 1000000000000000000 WBNB");
+  console.log(
+    "Action:",
+    result7.swapAmount.gt(0) ? "Real user fee adjustment" : "No swap needed"
+  );
+  console.log("Swap Amount:", result7.swapAmount.toString());
+  console.log("Token In:", result7.tokenIn);
+  console.log("Token Out:", result7.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result7.expectedRatioAfterSwap.token0Percent}% token0, ${result7.expectedRatioAfterSwap.token1Percent}% token1`
+  );
+
+  // Example 8: Real values from user targeting 10% ratio
+  console.log("\n--- Example 8: Real User Values (10% Target) ---");
+  const feeAmount0USD_8 = BigNumber.from("875189502145937"); // Real fee token0 (ETH)
+  const feeAmount1USD_8 = BigNumber.from("4129712983430202"); // Real fee token1 (WBNB)
+  const desiredAmount0USD_8 = BigNumber.from("200000000000000000"); // 0.2 token0 (desired for 10%)
+  const desiredAmount1USD_8 = BigNumber.from("1800000000000000000"); // 1.8 token1 (desired for 90%)
+
+  const result8 = getSwapInfoToDesiredRatioBN(
+    feeAmount0USD_8,
+    feeAmount1USD_8,
+    desiredAmount0USD_8,
+    desiredAmount1USD_8,
+    "0x2170Ed0880ac9A755fd29B2688956BD959F933F8", // ETH token0
+    "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" // WBNB token1
+  );
+
+  console.log("Current: 875189502145937 ETH, 4129712983430202 WBNB");
+  console.log(
+    "Desired: 200000000000000000 ETH, 1800000000000000000 WBNB (10/90)"
+  );
+  console.log(
+    "Action:",
+    result8.swapAmount.gt(0)
+      ? "Real user fee adjustment to 10%"
+      : "No swap needed"
+  );
+  console.log("Swap Amount:", result8.swapAmount.toString());
+  console.log("Token In:", result8.tokenIn);
+  console.log("Token Out:", result8.tokenOut);
+  console.log(
+    `Expected ratio after swap: ${result8.expectedRatioAfterSwap.token0Percent}% token0, ${result8.expectedRatioAfterSwap.token1Percent}% token1`
+  );
 
   return {
     result1,
@@ -1099,5 +1327,7 @@ export function testSwapAmountCalculationPrecise() {
     result4,
     result5,
     result6,
+    result7,
+    result8,
   };
 }
