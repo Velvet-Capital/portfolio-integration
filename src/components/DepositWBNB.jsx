@@ -57,6 +57,26 @@ const DepositWBNB = ({ portfolio }) => {
       const signer = provider.getSigner();
       const chainId = (await provider.getNetwork()).chainId;
       const depositBatch = new ethers.Contract(depositBatchAddress, DEPOSIT_BATCH_ABI, signer);
+      const portfolioContract = new ethers.Contract(
+        portfolio.portfolioAddress,
+        PORTFOLIO_ABI,
+        signer
+    );
+
+    const assetManagementConfig = new ethers.Contract(
+        await portfolioContract.assetManagementConfig(),
+        ASSET_MANAGEMENT_CONFIG_ABI,
+        signer
+    );
+    const minPortfolioTokenHoldingAmount = await getMinPortfolioTokenHoldingAmount(assetManagementConfig.address);
+    console.log("minPortfolioTokenHoldingAmount", minPortfolioTokenHoldingAmount);
+
+
+
+    if (ethers.BigNumber.from(amount).lt(minPortfolioTokenHoldingAmount)) {
+      setError(`Deposit amount must be greater than ${minPortfolioTokenHoldingAmount} wei`);
+      return;
+    }
 
       // Get portfolio contract
       let depositToken = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
@@ -213,38 +233,48 @@ const DepositWBNB = ({ portfolio }) => {
   
 
  
-
+ const getMinPortfolioTokenHoldingAmount = async (assetManagerAddress) => {
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      
+      const contract = new ethers.Contract(assetManagerAddress, ASSET_MANAGEMENT_CONFIG_ABI, provider);
+      return await contract.minPortfolioTokenHoldingAmount();
+    } catch (e) {
+      console.error('Error:', e);
+      throw e;
+    }
+  };
   const sleep = (ms) =>
     new Promise((resolve) => setTimeout(resolve, ms));
 
   return (
     <div className="deposit-wbnb">
       <div className="input-group">
-        <input
+        {/* <input
           type="text"
           value={tokenAddress}
           onChange={(e) => setTokenAddress(e.target.value)}
           placeholder="Enter token address"
           className="wbnb-input"
-        />
+        /> */}
       </div>
       <div className="input-group">
         <input
           type="text"
           value={amount}
           onChange={handleAmountChange}
-          placeholder="Enter token amount"
+          placeholder="Enter BNB amount"
           className="wbnb-input"
         />
-        <span className="input-suffix">Tokens</span>
+        <span className="input-suffix">BNB in wei</span>
       </div>
 
       <button
         onClick={handleDeposit}
-        disabled={loading || !amount || !tokenAddress}
+        disabled={loading || !amount}
         className="deposit-button"
       >
-        {loading ? 'Processing Deposit...' : 'Deposit Tokens'}
+        {loading ? 'Processing Deposit...' : 'Deposit BNB'}
       </button>
       
       {notification && (

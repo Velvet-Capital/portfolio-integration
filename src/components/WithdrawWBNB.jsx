@@ -173,7 +173,7 @@ const WithdrawWBNB = ({ portfolio }) => {
 
       await portfolioContract.approve(
         withdrawManagerAddress,
-        amountPortfolioToken
+        withdrawalAmount.toString()
       );
 
       console.log("here");
@@ -195,7 +195,7 @@ const WithdrawWBNB = ({ portfolio }) => {
         swapTokensFinal,
         portfolio.portfolioAddress,
         tokenToSwapInto,
-        amountPortfolioToken,
+        withdrawalAmount.toString(),
         ensoCalldata,
         0,
         {
@@ -271,44 +271,27 @@ const WithdrawWBNB = ({ portfolio }) => {
   }
 
   return (
-    <div className="withdraw-wbnb w-full max-w-md mx-auto p-4 bg-white rounded-lg shadow-md text-center">
-      <h3 className="text-lg font-semibold mb-4">Withdraw WBNB</h3>
-      <div className="withdraw-input flex flex-col items-center gap-4 w-full">
-        <div className="w-full">
-          <input
-            type="text"
-            value={percentage}
-            onChange={handlePercentageChange}
-            placeholder="Enter percentage (0-100)"
-            disabled={loading}
-            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
-          />
-        </div>
+    <div className="withdraw-wbnb">
+      <h3>Withdraw WBNB</h3>
+      <div className="withdraw-input">
+        <input
+          type="text"
+          value={percentage}
+          onChange={handlePercentageChange}
+          placeholder="Enter percentage (0-100)"
+          disabled={loading}
+        />
         <button
           onClick={handleWithdraw}
           disabled={loading}
-          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? "Withdrawing..." : "Withdraw"}
         </button>
       </div>
-      <div className="w-full mt-4">
-        {error && (
-          <div className="error w-full p-2 bg-red-100 text-red-700 rounded text-center">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="success w-full p-2 bg-green-100 text-green-700 rounded text-center">
-            Withdrawal successful!
-          </div>
-        )}
-        {notification && (
-          <div className="notification w-full p-2 bg-blue-100 text-blue-700 rounded text-center">
-            {notification}
-          </div>
-        )}
-      </div>
+      
+      {error && <div className="error">{error}</div>}
+      {success && <div className="success">Withdrawal successful!</div>}
+      {notification && <div className="notification">{notification}</div>}
     </div>
   );
 };

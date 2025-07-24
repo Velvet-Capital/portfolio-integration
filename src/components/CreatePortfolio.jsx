@@ -13,6 +13,7 @@ const LM5Portfolio = "0x31d081b8f9729643e5820baa8fa4982393c9eb25";
 const CreatePortfolio = () => {
   const { account, connect } = useMetaMask();
   const [error, setError] = useState(null);
+  const [copied, setCopied] = useState(false);
   
   // Hardcoded portfolio data
   const portfolio = {
@@ -25,23 +26,40 @@ const CreatePortfolio = () => {
     positionIndex: 0
   };
 
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(portfolio.portfolioAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy address:', err);
+    }
+  };
+
   return (
     <div className="create-portfolio">
       <h2>LM5 Portfolio Management</h2>
       {!account ? (
-        <button onClick={connect}>Connect Wallet</button>
+        <div className="connect-prompt">
+          <p>Please connect your wallet to continue</p>
+        </div>
       ) : (
         <div className="portfolio-management">
           <div className="portfolio-info">
             <h3>{portfolio.name}</h3>
-            <p>Address: {portfolio.portfolioAddress}</p>
+            <div className="address-container">
+              <p>Address: {portfolio.portfolioAddress}</p>
+              <button onClick={copyToClipboard} className="copy-button">
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
             <p>Symbol: {portfolio.symbol}</p>
           </div>
           
           <div className="portfolio-actions">
             {/* <CreatePosition portfolioAddress={portfolio.portfolioAddress} /> */}
-            <InitToken portfolioAddress={portfolio.portfolioAddress} />
-            <WBNBApproval portfolio={portfolio} />
+            {/* <InitToken portfolioAddress={portfolio.portfolioAddress} />
+            <WBNBApproval portfolio={portfolio} /> */}
             <DepositWBNB portfolio={portfolio} />
             {/* <RebalancePortfolio portfolio={portfolio} /> */}
             <WithdrawWBNB portfolio={portfolio} />

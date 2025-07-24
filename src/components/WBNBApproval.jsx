@@ -170,6 +170,7 @@ const WBNBApproval = ({ portfolio }) => {
 
   return (
     <div className="wbnb-approval">
+      <h4>Approve Token</h4>
       <div className="input-group">
         <input
           type="text"
