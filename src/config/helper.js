@@ -24,10 +24,9 @@ import {
   VENUS_TOKEN_ABI,
 } from "./contracts.js";
 
-import { PoolFeeCalculator } from './poolFeeCalculator';
+import { PoolFeeCalculator } from "./poolFeeCalculator";
 
-import { chainIdToAddresses } from './networkVariables';
-
+import { chainIdToAddresses } from "./networkVariables";
 
 const MaxUint128 = ethers.BigNumber.from("0xffffffffffffffffffffffffffffffff");
 
@@ -437,7 +436,14 @@ export async function getWithdrawBatchData(
     withdrawalAmounts
   );
 
-  const { flashLoanAmounts, amountToSell, lendTokensSet, borrowTokens, poolFees, lendTokens } = await getFlashLoanData(
+  const {
+    flashLoanAmounts,
+    amountToSell,
+    lendTokensSet,
+    borrowTokens,
+    poolFees,
+    lendTokens,
+  } = await getFlashLoanData(
     portfolioAddress,
     tokenBalanceLibraryAddress,
     swapVerificationLibraryAddress,
@@ -445,7 +451,11 @@ export async function getWithdrawBatchData(
     portfolioCalculationsAddress,
     userAddress
   );
-  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const portfolio = new ethers.Contract(
+    portfolioAddress,
+    PORTFOLIO_ABI,
+    provider
+  );
   const vault = await portfolio.vault();
 
   let swapTokens = reinvestmentSwapInfo.swapTokens;
@@ -458,20 +468,26 @@ export async function getWithdrawBatchData(
     lendTokenToAmountIndex.set(lendTokens[i], i);
   }
   let ensoCalldata = [];
+  let swapTokensFinal = [];
   for (let i = 0; i < swapTokens.length; i++) {
     let withdrawalAmount = withdrawalAmounts[i];
     if (swapTokens[i] != withdrawalToken) {
       if (lendTokensSet.has(swapTokens[i])) {
-        const tokenContract = new ethers.Contract(swapTokens[i], ERC20_ABI, provider);
+        const tokenContract = new ethers.Contract(
+          swapTokens[i],
+          ERC20_ABI,
+          provider
+        );
         const vaultBalance = await tokenContract.balanceOf(vault);
         const userShare = vaultBalance
           .mul(amountPortfolioToken)
           .div(await portfolio.totalSupply());
-          const amountIndex = lendTokenToAmountIndex.get(swapTokens[i]);
-          console.log("amountToSell[amountIndex]:", amountToSell[amountIndex]);
-  
-          withdrawalAmount = userShare.sub(amountToSell[amountIndex]);
+        const amountIndex = lendTokenToAmountIndex.get(swapTokens[i]);
+        console.log("amountToSell[amountIndex]:", amountToSell[amountIndex]);
+
+        withdrawalAmount = userShare.sub(amountToSell[amountIndex]);
       } else {
+        swapTokensFinal.push(swapTokens[i]);
         let response = await createEnsoCallDataRoute(
           withdrawBatchAddress,
           userAddress,
@@ -486,7 +502,13 @@ export async function getWithdrawBatchData(
     }
   }
 
-  return { reinvestmentSwapInfo, ensoCalldata, flashLoanAmounts, poolFees };
+  return {
+    reinvestmentSwapInfo,
+    ensoCalldata,
+    flashLoanAmounts,
+    poolFees,
+    swapTokensFinal,
+  };
 }
 
 async function getPoolFeesForWithdrawal(
@@ -518,13 +540,15 @@ export async function getFlashLoanData(
   portfolioCalculationsAddress,
   userAddress
 ) {
-
   const addresses = chainIdToAddresses[56];
 
-  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const portfolio = new ethers.Contract(
+    portfolioAddress,
+    PORTFOLIO_ABI,
+    provider
+  );
   const vault = await portfolio.vault();
   const tokens = await portfolio.getTokens();
-
 
   // for now we make it constant, we can make it dynamic later
   let flashLoanProtocolToken = addresses.vUSDT_Address; // TakflashLoanProtocolTokening USDT as collateral token
@@ -537,7 +561,11 @@ export async function getFlashLoanData(
     await portfolio.balanceOf(userAddress)
   );
 
-  const portfolioCalculations = new ethers.Contract(portfolioCalculationsAddress, PORTFOLIO_CALCULATIONS_ABI, provider);
+  const portfolioCalculations = new ethers.Contract(
+    portfolioCalculationsAddress,
+    PORTFOLIO_CALCULATIONS_ABI,
+    provider
+  );
   const values =
     await portfolioCalculations.calculateBorrowedPortionAndFlashLoanDetails(
       portfolio.address,
@@ -553,7 +581,11 @@ export async function getFlashLoanData(
 
   console.log("debtRepayAmount:", debtRepayAmount);
 
-  const venusAssetHandler = new ethers.Contract(venusAssetHandlerAddress, VENUS_ASSET_HANDLER_ABI, provider);
+  const venusAssetHandler = new ethers.Contract(
+    venusAssetHandlerAddress,
+    VENUS_ASSET_HANDLER_ABI,
+    provider
+  );
 
   const [lendTokens, borrowTokens] =
     await venusAssetHandler.getAllProtocolAssets(
@@ -616,7 +648,14 @@ export async function getFlashLoanData(
   console.log("flashLoanAmounts:", flashLoanAmounts);
   console.log("AmountToSell:", amountToSell);
 
-  return { flashLoanAmounts, amountToSell, lendTokensSet, borrowTokens, poolFees,  lendTokens};
+  return {
+    flashLoanAmounts,
+    amountToSell,
+    lendTokensSet,
+    borrowTokens,
+    poolFees,
+    lendTokens,
+  };
 }
 
 export async function getWithdrawalAmounts(
@@ -670,7 +709,11 @@ export async function getSwapAmountsForExternalPosition(
       let reduced = reduceAmount(withdrawalAmounts[i]);
       swapAmounts.push(reduced.toString());
     } else {
-      const positionWrapperCurrent = new ethers.Contract(positionWrappers[wrapperIndex], POSITION_WRAPPER_ABI, provider);
+      const positionWrapperCurrent = new ethers.Contract(
+        positionWrappers[wrapperIndex],
+        POSITION_WRAPPER_ABI,
+        provider
+      );
 
       let percentage = await amountCalculationsAlgebra.getPercentage(
         withdrawalAmounts[i],
@@ -1207,6 +1250,8 @@ export async function createEnsoCallDataRoute(
   };
   await new Promise((resolve) => setTimeout(resolve, 1000));
   const postUrl = "https://api.enso.finance/api/v1/shortcuts/route?";
+
+  console.log("params", params);
 
   const headers = {
     //"Content-Type": "application/json",

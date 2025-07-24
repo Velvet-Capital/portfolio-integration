@@ -1,19 +1,29 @@
-import { useState, useEffect } from 'react';
-import { useMetaMask } from '../contexts/MetaMaskContext';
-import { ethers } from 'ethers';
-import { priceOracleAddress, tokenBalanceLibraryAddress, swapVerificationLibraryAddress, portfolioCalculationsAddress, withdrawBatchAddress, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,PORTFOLIO_ABI,ASSET_MANAGEMENT_CONFIG_ABI,withdrawManagerAddress,WITHDRAW_MANAGER_ABI } from '../config/contracts';
-import './WithdrawWBNB.css';
-import { getWithdrawBatchData } from '../config/helper';
-import { chainIdToAddresses } from '../config/networkVariables';
+import { useState, useEffect } from "react";
+import { useMetaMask } from "../contexts/MetaMaskContext";
+import { ethers } from "ethers";
+import {
+  priceOracleAddress,
+  tokenBalanceLibraryAddress,
+  swapVerificationLibraryAddress,
+  portfolioCalculationsAddress,
+  withdrawBatchAddress,
+  AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,
+  PORTFOLIO_ABI,
+  ASSET_MANAGEMENT_CONFIG_ABI,
+  withdrawManagerAddress,
+  WITHDRAW_MANAGER_ABI,
+} from "../config/contracts";
+import "./WithdrawWBNB.css";
+import { getWithdrawBatchData } from "../config/helper";
+import { chainIdToAddresses } from "../config/networkVariables";
 const addresses = chainIdToAddresses[56];
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const thenaFactory = "0x306f06c147f064a010530292a1eb6737c3e378e4";
-const ensoHandlerAddress = "0x064d07d417449c253F288A95eeBb62bf9E427DA4"
+const ensoHandlerAddress = "0x064d07d417449c253F288A95eeBb62bf9E427DA4";
 const tokenToSwapInto = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-const swapHandler = "0xB21F98b6B9d7693bc470EE882E83deD2d0ce5F6E"
-const swapHandlerV3 = "0xA238B85AeC6785f08d41E9e09357d6d82d381b2B"
-
+const swapHandler = "0xB21F98b6B9d7693bc470EE882E83deD2d0ce5F6E";
+const swapHandlerV3 = "0xA238B85AeC6785f08d41E9e09357d6d82d381b2B";
 
 const WithdrawWBNB = ({ portfolio }) => {
   const { account, connect } = useMetaMask();
@@ -21,7 +31,7 @@ const WithdrawWBNB = ({ portfolio }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [percentage, setPercentage] = useState('');
+  const [percentage, setPercentage] = useState("");
   const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState(true);
 
   useEffect(() => {
@@ -41,10 +51,11 @@ const WithdrawWBNB = ({ portfolio }) => {
     }
   };
 
-
   const handleWithdraw = async () => {
     if (!isMetaMaskInstalled) {
-      setError('MetaMask is not installed. Please install MetaMask to use this feature.');
+      setError(
+        "MetaMask is not installed. Please install MetaMask to use this feature."
+      );
       return;
     }
 
@@ -52,35 +63,39 @@ const WithdrawWBNB = ({ portfolio }) => {
       try {
         await connect();
       } catch (err) {
-        setError('Failed to connect to MetaMask. Please make sure MetaMask is unlocked and try again.');
+        setError(
+          "Failed to connect to MetaMask. Please make sure MetaMask is unlocked and try again."
+        );
         return;
       }
       return;
     }
 
-    if (!percentage || parseFloat(percentage) <= 0 || parseFloat(percentage) > 100) {
-      setError('Please enter a valid percentage between 0 and 100');
+    if (
+      !percentage ||
+      parseFloat(percentage) <= 0 ||
+      parseFloat(percentage) > 100
+    ) {
+      setError("Please enter a valid percentage between 0 and 100");
       return;
     }
 
     setLoading(true);
     setError(null);
     setSuccess(false);
-    setNotification('Starting withdrawal process...');
+    setNotification("Starting withdrawal process...");
 
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
 
       // Get portfolio contract
-      console.log("portfolio.portfolioAddress", portfolio.portfolioAddress)
+      console.log("portfolio.portfolioAddress", portfolio.portfolioAddress);
       const portfolioContract = new ethers.Contract(
         portfolio.portfolioAddress,
         PORTFOLIO_ABI,
         signer
       );
-
-
 
       // // Get position wrapper
       // if (!portfolio.positionList || portfolio.positionList.length === 0) {
@@ -106,14 +121,15 @@ const WithdrawWBNB = ({ portfolio }) => {
       // const positionManagerAddress = await assetManagementConfig.lastDeployedPositionManager();
       // console.log("Raw position manager address:", positionManagerAddress);
 
-
       // Calculate withdrawal amount based on percentage
       const amountPortfolioToken = await portfolioContract.balanceOf(account);
       if (amountPortfolioToken.isZero()) {
-        throw new Error('No portfolio tokens available to withdraw');
+        throw new Error("No portfolio tokens available to withdraw");
       }
 
-      const withdrawalAmount = amountPortfolioToken.mul(ethers.utils.parseUnits(percentage, 2)).div(10000); // Convert percentage to basis points
+      const withdrawalAmount = amountPortfolioToken
+        .mul(ethers.utils.parseUnits(percentage, 2))
+        .div(10000); // Convert percentage to basis points
 
       const {
         reinvestmentSwapInfo: {
@@ -135,7 +151,8 @@ const WithdrawWBNB = ({ portfolio }) => {
         },
         ensoCalldata,
         flashLoanAmounts,
-        poolFees
+        poolFees,
+        swapTokensFinal,
       } = await getWithdrawBatchData(
         priceOracleAddress,
         tokenBalanceLibraryAddress, // tokenBalanceLibraryAddress
@@ -149,23 +166,33 @@ const WithdrawWBNB = ({ portfolio }) => {
         await signer.getAddress()
       );
 
+      console.log("FINAL TX DATA");
+      console.log("swapAmounts", swapAmounts);
+      console.log("tokensIn", tokensIn);
+      console.log("tokensOut", tokensOut);
+
       await portfolioContract.approve(
         withdrawManagerAddress,
         amountPortfolioToken
       );
 
-      console.log("here")
+      console.log("here");
 
-      console.log("withdrawBatchAddress", withdrawBatchAddress)
-      console.log("portfolio.portfolioAddress", WITHDRAW_MANAGER_ABI)
-      console.log("signer", signer)
+      console.log("withdrawBatchAddress", withdrawBatchAddress);
+      console.log("portfolio.portfolioAddress", WITHDRAW_MANAGER_ABI);
+      console.log("signer", signer);
 
-      const withdrawManager = new ethers.Contract(withdrawManagerAddress, WITHDRAW_MANAGER_ABI, signer);
+      const withdrawManager = new ethers.Contract(
+        withdrawManagerAddress,
+        WITHDRAW_MANAGER_ABI,
+        signer
+      );
 
-      console.log("here2")
+      console.log("here2");
+      console.log("swapTokens", swapTokens);
 
       const withdrawalTx = await withdrawManager.withdraw(
-        swapTokens,
+        swapTokensFinal,
         portfolio.portfolioAddress,
         tokenToSwapInto,
         amountPortfolioToken,
@@ -196,25 +223,27 @@ const WithdrawWBNB = ({ portfolio }) => {
           _fee: feeTiers,
         },
         {
-          gasLimit: 10000000
+          gasLimit: 10000000,
         }
       );
 
-
       console.log("Waiting for withdrawal transaction...");
       const receiptWithdrawal = await withdrawalTx.wait();
-      console.log("Withdrawal transaction mined:", receiptWithdrawal.transactionHash);
+      console.log(
+        "Withdrawal transaction mined:",
+        receiptWithdrawal.transactionHash
+      );
 
       setSuccess(true);
-      setNotification('Withdrawal completed successfully!');
+      setNotification("Withdrawal completed successfully!");
     } catch (err) {
-      console.error('Error during withdrawal:', err);
+      console.error("Error during withdrawal:", err);
       if (err.code === 4001) {
-        setError('Transaction was rejected by user');
+        setError("Transaction was rejected by user");
       } else if (err.code === -32002) {
-        setError('Please check MetaMask for pending transaction');
+        setError("Please check MetaMask for pending transaction");
       } else {
-        setError(err.message || 'An error occurred during withdrawal');
+        setError(err.message || "An error occurred during withdrawal");
       }
     } finally {
       setLoading(false);
@@ -226,9 +255,14 @@ const WithdrawWBNB = ({ portfolio }) => {
       <div className="withdraw-wbnb">
         <h3>Withdraw WBNB</h3>
         <div className="error">
-          MetaMask is not installed. Please install MetaMask to use this feature.
+          MetaMask is not installed. Please install MetaMask to use this
+          feature.
           <br />
-          <a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://metamask.io/download/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Download MetaMask
           </a>
         </div>
@@ -255,16 +289,28 @@ const WithdrawWBNB = ({ portfolio }) => {
           disabled={loading}
           className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Withdrawing...' : 'Withdraw'}
+          {loading ? "Withdrawing..." : "Withdraw"}
         </button>
       </div>
       <div className="w-full mt-4">
-        {error && <div className="error w-full p-2 bg-red-100 text-red-700 rounded text-center">{error}</div>}
-        {success && <div className="success w-full p-2 bg-green-100 text-green-700 rounded text-center">Withdrawal successful!</div>}
-        {notification && <div className="notification w-full p-2 bg-blue-100 text-blue-700 rounded text-center">{notification}</div>}
+        {error && (
+          <div className="error w-full p-2 bg-red-100 text-red-700 rounded text-center">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="success w-full p-2 bg-green-100 text-green-700 rounded text-center">
+            Withdrawal successful!
+          </div>
+        )}
+        {notification && (
+          <div className="notification w-full p-2 bg-blue-100 text-blue-700 rounded text-center">
+            {notification}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default WithdrawWBNB; 
+export default WithdrawWBNB;
