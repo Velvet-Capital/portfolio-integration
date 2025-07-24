@@ -4,6 +4,8 @@ import { ethers } from 'ethers';
 import { priceOracleAddress, tokenBalanceLibraryAddress, swapVerificationLibraryAddress, portfolioCalculationsAddress, withdrawBatchAddress, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,PORTFOLIO_ABI,ASSET_MANAGEMENT_CONFIG_ABI,withdrawManagerAddress,WITHDRAW_MANAGER_ABI } from '../config/contracts';
 import './WithdrawWBNB.css';
 import { getWithdrawBatchData } from '../config/helper';
+import { chainIdToAddresses } from '../config/networkVariables';
+const addresses = chainIdToAddresses[56];
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const thenaFactory = "0x306f06c147f064a010530292a1eb6737c3e378e4";
@@ -131,7 +133,8 @@ const WithdrawWBNB = ({ portfolio }) => {
           swapDeployer,
         },
         ensoCalldata,
-        flashLoanAmounts
+        flashLoanAmounts,
+        poolFees
       } = await getWithdrawBatchData(
         priceOracleAddress,
         tokenBalanceLibraryAddress, // tokenBalanceLibraryAddress
@@ -169,16 +172,16 @@ const WithdrawWBNB = ({ portfolio }) => {
         0,
         {
           _factory: thenaFactory,
-          _token0: ZERO_ADDRESS,
-          _token1: ZERO_ADDRESS,
-          _flashLoanToken: ZERO_ADDRESS,
+          _token0: addresses.ETH_Address,
+          _token1: addresses.WETH_Address,
+          _flashLoanToken: addresses.ETH_Address,
           _bufferUnit: "280",
           _solverHandler: ensoHandlerAddress,
           _flashLoanAmount: flashLoanAmounts,
           firstSwapData: [["0x"]],
           secondSwapData: [["0x"]],
           _swapHandler: swapHandler,
-          _poolFees: [[0]],
+          _poolFees: poolFees.poolFees,
           isDexRepayment: false,
         },
         {

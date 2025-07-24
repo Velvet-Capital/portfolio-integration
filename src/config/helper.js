@@ -486,7 +486,7 @@ export async function getWithdrawBatchData(
     }
   }
 
-  return { reinvestmentSwapInfo, ensoCalldata, flashLoanAmounts };
+  return { reinvestmentSwapInfo, ensoCalldata, flashLoanAmounts, poolFees };
 }
 
 async function getPoolFeesForWithdrawal(
@@ -567,7 +567,7 @@ export async function getFlashLoanData(
   console.log("borrowTokens:", borrowTokens);
 
   const poolFees = await getPoolFeesForWithdrawal(
-    addresses.USDT, // flashLoanToken (normal token)
+    addresses.ETH_Address, // flashLoanToken (normal token)
     borrowTokens, // vDebtTokens (vToken format)
     lendTokens, // vLendTokens (vToken format)
     addresses,
