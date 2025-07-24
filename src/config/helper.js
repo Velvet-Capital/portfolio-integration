@@ -126,11 +126,6 @@ async function getDepositAmounts(
     splitAmounts = splitEqually(BigNumber.from(depositAmount), numTokens);
   } else {
     // Add Venus borrowing logic
-    const venusAssetHandler = new ethers.Contract(
-      venusAssetHandlerAddress,
-      VENUS_ASSET_HANDLER_ABI,
-      provider
-    );
 
     // Get comptroller address
     const comptrollerAddress = "0xfD36E2c2a6789Db23113685031d7F16329158384";
@@ -443,6 +438,11 @@ export async function getWithdrawBatchData(
     borrowTokens,
     poolFees,
     lendTokens,
+    flashLoanToken,
+    thenaPoolInfo,
+    flashLoanProtocolToken,
+    bufferUnit,
+    flashloanBufferUnit
   } = await getFlashLoanData(
     portfolioAddress,
     tokenBalanceLibraryAddress,
@@ -508,6 +508,11 @@ export async function getWithdrawBatchData(
     flashLoanAmounts,
     poolFees,
     swapTokensFinal,
+    flashLoanToken,
+    thenaPoolInfo,
+    flashLoanProtocolToken,
+    bufferUnit,
+    flashloanBufferUnit
   };
 }
 
@@ -551,9 +556,99 @@ export async function getFlashLoanData(
   const tokens = await portfolio.getTokens();
 
   // for now we make it constant, we can make it dynamic later
-  let flashLoanProtocolToken = addresses.vUSDT_Address; // TakflashLoanProtocolTokening USDT as collateral token
+  let flashLoanProtocolToken; // TakflashLoanProtocolTokening USDT as collateral token
+  let flashLoanToken;
+  let poolFees;
+  let thenaPoolInfo;
 
   let flashLoanAmounts = [];
+
+  const venusAssetHandler = new ethers.Contract(
+    venusAssetHandlerAddress,
+    VENUS_ASSET_HANDLER_ABI,
+    provider
+  );
+
+  const [lendTokens, borrowTokens] =
+    await venusAssetHandler.getAllProtocolAssets(
+      vault,
+      addresses.corePool_controller,
+      []
+    );
+
+  // Replace the flash loan token selection logic with:
+  if (borrowTokens.length === 0) {
+    console.log("✅ No borrowed tokens - proceeding with simple withdrawal");
+    flashLoanProtocolToken = addresses.vUSDT_Address;
+    flashLoanToken = addresses.USDT;
+    poolFees = { poolFees: [[]] }; // Empty pool fees
+    thenaPoolInfo = {
+      _factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+      _token0: addresses.USDT,
+      _token1: addresses.USDC_Address,
+      _flashLoanToken: addresses.USDT
+    };
+  } else {
+    console.log(`🔍 ${borrowTokens.length === 1 ? 'Single' : 'Multiple'} borrowed tokens - selecting optimal flash loan token`);
+    
+    const calculator = new PoolFeeCalculator(
+      addresses.PancakeSwapV3FactoryAddress,
+      56,
+      venusAssetHandler
+    );
+    
+    try {
+      // Get optimal flash loan token AND Thena pool info
+      const flashLoanSelection = await calculator.selectOptimalFlashLoanToken(
+        borrowTokens,
+        lendTokens,
+        addresses
+      );
+      
+      flashLoanProtocolToken = flashLoanSelection.flashLoanProtocolToken;
+      flashLoanToken = flashLoanSelection.flashLoanToken;
+      
+      // Calculate pool fees
+      poolFees = await calculator.getPoolFeesForWithdrawal(
+        flashLoanToken,
+        borrowTokens,
+        lendTokens,
+        addresses
+      );
+      
+      thenaPoolInfo = {
+        _factory: flashLoanSelection.thenaFactory,
+        _token0: flashLoanSelection.thenaToken0,
+        _token1: flashLoanSelection.thenaToken1,
+        _flashLoanToken: flashLoanSelection.flashLoanToken
+      };
+      
+      console.log("Selected flash loan token:", flashLoanToken);
+      console.log("Selected Thena pool:", thenaPoolInfo);
+      
+    } catch (error) {
+      console.log(`❌ Error in flash loan selection: ${error.message}`);
+      console.log("⚠️ Falling back to default USDT flash loan");
+      
+      // Fallback to USDT
+      flashLoanProtocolToken = addresses.vUSDT_Address;
+      flashLoanToken = addresses.USDT;
+      poolFees = { poolFees: [[]] }; // Default empty pool fees
+      thenaPoolInfo = {
+        _factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+        _token0: addresses.USDT,
+        _token1: addresses.USDC_Address,
+        _flashLoanToken: addresses.USDT
+      };
+    }
+  }
+  
+  console.log("Selected flash loan protocol token:", flashLoanProtocolToken);
+  console.log("Selected flash loan token:", flashLoanToken);
+  console.log("Token0:", thenaPoolInfo._token0);
+  console.log("Token1:", thenaPoolInfo._token1);
+  console.log("Factory:", thenaPoolInfo._factory);
+
 
   let flashloanBufferUnit = 18; //Flashloan buffer unit in 1/10000, extra flashlaon to take, to fulfil the swap(from flashlaon to debt token)
   let bufferUnit = 280; //Buffer unit for collateral amount in 1/100000, extra collateral to take, to fulfil the swap(from collateral underlying to flashlaon token)
@@ -581,31 +676,19 @@ export async function getFlashLoanData(
 
   console.log("debtRepayAmount:", debtRepayAmount);
 
-  const venusAssetHandler = new ethers.Contract(
-    venusAssetHandlerAddress,
-    VENUS_ASSET_HANDLER_ABI,
-    provider
-  );
-
-  const [lendTokens, borrowTokens] =
-    await venusAssetHandler.getAllProtocolAssets(
-      vault,
-      addresses.corePool_controller,
-      []
-    );
   const lendTokensSet = new Set(lendTokens);
 
   console.log("lendTokens:", lendTokens);
   console.log("borrowTokens:", borrowTokens);
 
-  const poolFees = await getPoolFeesForWithdrawal(
-    addresses.ETH_Address, // flashLoanToken (normal token)
-    borrowTokens, // vDebtTokens (vToken format)
-    lendTokens, // vLendTokens (vToken format)
-    addresses,
-    56,
-    venusAssetHandler // Pass the venusAssetHandler
-  );
+  // const poolFees = await getPoolFeesForWithdrawal(
+  //   addresses.ETH_Address, // flashLoanToken (normal token)
+  //   borrowTokens, // vDebtTokens (vToken format)
+  //   lendTokens, // vLendTokens (vToken format)
+  //   addresses,
+  //   56,
+  //   venusAssetHandler // Pass the venusAssetHandler
+  // );
 
   console.log("poolFees:", poolFees.poolFees);
 
@@ -655,6 +738,11 @@ export async function getFlashLoanData(
     borrowTokens,
     poolFees,
     lendTokens,
+    flashLoanToken,
+    thenaPoolInfo,
+    flashLoanProtocolToken,
+    bufferUnit,
+    flashloanBufferUnit
   };
 }
 
