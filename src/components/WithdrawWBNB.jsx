@@ -131,6 +131,7 @@ const WithdrawWBNB = ({ portfolio }) => {
           swapDeployer,
         },
         ensoCalldata,
+        flashLoanAmounts
       } = await getWithdrawBatchData(
         priceOracleAddress,
         tokenBalanceLibraryAddress, // tokenBalanceLibraryAddress
@@ -171,9 +172,9 @@ const WithdrawWBNB = ({ portfolio }) => {
           _token0: ZERO_ADDRESS,
           _token1: ZERO_ADDRESS,
           _flashLoanToken: ZERO_ADDRESS,
-          _bufferUnit: "0",
+          _bufferUnit: "280",
           _solverHandler: ensoHandlerAddress,
-          _flashLoanAmount: [[0]],
+          _flashLoanAmount: flashLoanAmounts,
           firstSwapData: [["0x"]],
           secondSwapData: [["0x"]],
           _swapHandler: swapHandler,

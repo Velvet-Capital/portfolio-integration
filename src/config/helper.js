@@ -24,6 +24,11 @@ import {
   VENUS_TOKEN_ABI,
 } from "./contracts.js";
 
+import { PoolFeeCalculator } from './poolFeeCalculator';
+
+import { chainIdToAddresses } from './networkVariables';
+
+
 const MaxUint128 = ethers.BigNumber.from("0xffffffffffffffffffffffffffffffff");
 
 const provider = new ethers.providers.JsonRpcProvider(
@@ -432,23 +437,186 @@ export async function getWithdrawBatchData(
     withdrawalAmounts
   );
 
+  const { flashLoanAmounts, amountToSell, lendTokensSet, borrowTokens, poolFees, lendTokens } = await getFlashLoanData(
+    portfolioAddress,
+    tokenBalanceLibraryAddress,
+    swapVerificationLibraryAddress,
+    amountCalculationsAddress,
+    portfolioCalculationsAddress,
+    userAddress
+  );
+  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const vault = await portfolio.vault();
+
   let swapTokens = reinvestmentSwapInfo.swapTokens;
 
+  const amountPortfolioToken = BigNumber.from(
+    await portfolio.balanceOf(userAddress)
+  );
+  const lendTokenToAmountIndex = new Map();
+  for (let i = 0; i < lendTokens.length; i++) {
+    lendTokenToAmountIndex.set(lendTokens[i], i);
+  }
   let ensoCalldata = [];
   for (let i = 0; i < swapTokens.length; i++) {
+    let withdrawalAmount = withdrawalAmounts[i];
     if (swapTokens[i] != withdrawalToken) {
-      let response = await createEnsoCallDataRoute(
-        withdrawBatchAddress,
-        userAddress,
-        swapTokens[i],
-        withdrawalToken,
-        BigNumber.from(swapAmounts[i]).toString()
-      );
-      ensoCalldata.push(response.data.tx.data);
+      if (lendTokensSet.has(swapTokens[i])) {
+        const tokenContract = new ethers.Contract(swapTokens[i], ERC20_ABI, provider);
+        const vaultBalance = await tokenContract.balanceOf(vault);
+        const userShare = vaultBalance
+          .mul(amountPortfolioToken)
+          .div(await portfolio.totalSupply());
+          const amountIndex = lendTokenToAmountIndex.get(swapTokens[i]);
+          console.log("amountToSell[amountIndex]:", amountToSell[amountIndex]);
+  
+          withdrawalAmount = userShare.sub(amountToSell[amountIndex]);
+      } else {
+        let response = await createEnsoCallDataRoute(
+          withdrawBatchAddress,
+          userAddress,
+          swapTokens[i],
+          withdrawalToken,
+          BigNumber.from(swapAmounts[i]).toString()
+        );
+        ensoCalldata.push(response.data.tx.data);
+      }
+    } else {
+      ensoCalldata.push("0x");
     }
   }
 
-  return { reinvestmentSwapInfo, ensoCalldata };
+  return { reinvestmentSwapInfo, ensoCalldata, flashLoanAmounts };
+}
+
+async function getPoolFeesForWithdrawal(
+  flashLoanToken,
+  vDebtTokens, // Now in vToken format
+  vLendTokens, // Now in vToken format
+  addresses,
+  chainId,
+  venusAssetHandler
+) {
+  const calculator = new PoolFeeCalculator(
+    addresses.PancakeSwapV3FactoryAddress,
+    chainId,
+    venusAssetHandler
+  );
+  return await calculator.getPoolFeesForWithdrawal(
+    flashLoanToken,
+    vDebtTokens,
+    vLendTokens,
+    addresses
+  );
+}
+
+export async function getFlashLoanData(
+  portfolioAddress,
+  tokenBalanceLibraryAddress,
+  swapVerificationLibraryAddress,
+  amountCalculationsAddress,
+  portfolioCalculationsAddress,
+  userAddress
+) {
+
+  const addresses = chainIdToAddresses[56];
+
+  const portfolio = new ethers.Contract(portfolioAddress, PORTFOLIO_ABI, provider);
+  const vault = await portfolio.vault();
+  const tokens = await portfolio.getTokens();
+
+
+  // for now we make it constant, we can make it dynamic later
+  let flashLoanProtocolToken = addresses.vUSDT_Address; // TakflashLoanProtocolTokening USDT as collateral token
+
+  let flashLoanAmounts = [];
+
+  let flashloanBufferUnit = 18; //Flashloan buffer unit in 1/10000, extra flashlaon to take, to fulfil the swap(from flashlaon to debt token)
+  let bufferUnit = 280; //Buffer unit for collateral amount in 1/100000, extra collateral to take, to fulfil the swap(from collateral underlying to flashlaon token)
+  const amountPortfolioToken = BigNumber.from(
+    await portfolio.balanceOf(userAddress)
+  );
+
+  const portfolioCalculations = new ethers.Contract(portfolioCalculationsAddress, PORTFOLIO_CALCULATIONS_ABI, provider);
+  const values =
+    await portfolioCalculations.calculateBorrowedPortionAndFlashLoanDetails(
+      portfolio.address,
+      flashLoanProtocolToken,
+      vault,
+      addresses.corePool_controller,
+      venusAssetHandlerAddress,
+      amountPortfolioToken,
+      flashloanBufferUnit
+    );
+
+  const debtRepayAmount = values[0];
+
+  console.log("debtRepayAmount:", debtRepayAmount);
+
+  const venusAssetHandler = new ethers.Contract(venusAssetHandlerAddress, VENUS_ASSET_HANDLER_ABI, provider);
+
+  const [lendTokens, borrowTokens] =
+    await venusAssetHandler.getAllProtocolAssets(
+      vault,
+      addresses.corePool_controller,
+      []
+    );
+  const lendTokensSet = new Set(lendTokens);
+
+  console.log("lendTokens:", lendTokens);
+  console.log("borrowTokens:", borrowTokens);
+
+  const poolFees = await getPoolFeesForWithdrawal(
+    addresses.USDT, // flashLoanToken (normal token)
+    borrowTokens, // vDebtTokens (vToken format)
+    lendTokens, // vLendTokens (vToken format)
+    addresses,
+    56,
+    venusAssetHandler // Pass the venusAssetHandler
+  );
+
+  console.log("poolFees:", poolFees.poolFees);
+
+  console.log("------------- Calculating FlashLoanAmount -------------");
+  // the above 2 values are dependent, the more  weincrease flashlaon buffer unit, the more collateral we need to take, to fulfil the swap(i.e bufferUnit)
+  // Need a function ot predict the values correctly
+
+  // No.Of borrowed tokens, we can get from  calculateBorrowedPortionAndFlashLoanDetails(returns borrowed portion,FlashLoanAmount needed, underlyings of borrowedTokens, borrowedTokens(in VToken format))
+  // If 1, then take flashloan token == borrow token, and flashLaon amount == borrowed amount, only bufferUnit is needed
+  // If > 1, use data from calculateBorrowedPortionAndFlashLoanDetails and fetch flashLoanAmount, both bufferUnit and flashloanBufferUnit are needed
+
+  const amountToSell =
+    await portfolioCalculations.callStatic.getCollateralAmountToSell(
+      vault,
+      addresses.corePool_controller,
+      venusAssetHandler.address,
+      borrowTokens,
+      tokens,
+      debtRepayAmount,
+      "10", // 10 basis from thena pool fee(can be fetched from thena)
+      bufferUnit
+    );
+
+  if (values[3].length > 1) {
+    flashLoanAmounts.push(values[1]);
+  } else {
+    let borrowedToken = values[3][0]; // In vToken format
+    const balanceBorrowed =
+      await portfolioCalculations.getVenusTokenBorrowedBalance(
+        [borrowedToken],
+        vault
+      );
+    console.log("balanceBorrowed:", balanceBorrowed);
+    let borrowed = balanceBorrowed[0]
+      .mul(amountPortfolioToken)
+      .div(await portfolio.totalSupply());
+    flashLoanAmounts.push([borrowed.toString()]);
+  }
+
+  console.log("flashLoanAmounts:", flashLoanAmounts);
+  console.log("AmountToSell:", amountToSell);
+
+  return { flashLoanAmounts, amountToSell, lendTokensSet, borrowTokens, poolFees,  lendTokens};
 }
 
 export async function getWithdrawalAmounts(
@@ -502,9 +670,7 @@ export async function getSwapAmountsForExternalPosition(
       let reduced = reduceAmount(withdrawalAmounts[i]);
       swapAmounts.push(reduced.toString());
     } else {
-      const positionWrapperCurrent = PositionWrapper.attach(
-        positionWrappers[wrapperIndex]
-      );
+      const positionWrapperCurrent = new ethers.Contract(positionWrappers[wrapperIndex], POSITION_WRAPPER_ABI, provider);
 
       let percentage = await amountCalculationsAlgebra.getPercentage(
         withdrawalAmounts[i],
