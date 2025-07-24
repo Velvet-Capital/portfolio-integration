@@ -12,6 +12,7 @@ const thenaFactory = "0x306f06c147f064a010530292a1eb6737c3e378e4";
 const ensoHandlerAddress = "0x064d07d417449c253F288A95eeBb62bf9E427DA4"
 const tokenToSwapInto = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 const swapHandler = "0xB21F98b6B9d7693bc470EE882E83deD2d0ce5F6E"
+const swapHandlerV3 = "0xA238B85AeC6785f08d41E9e09357d6d82d381b2B"
 
 
 const WithdrawWBNB = ({ portfolio }) => {
@@ -180,9 +181,9 @@ const WithdrawWBNB = ({ portfolio }) => {
           _flashLoanAmount: flashLoanAmounts,
           firstSwapData: [["0x"]],
           secondSwapData: [["0x"]],
-          _swapHandler: swapHandler,
+          _swapHandler: swapHandlerV3,
           _poolFees: poolFees.poolFees,
-          isDexRepayment: false,
+          isDexRepayment: true,
         },
         {
           _positionWrappers: positionWrappers,
