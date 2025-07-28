@@ -823,9 +823,14 @@ function getSwapInfoToDesiredRatioBN(
   token1
 ) {
   const scale = BigNumber.from("1000000000000000000"); // 1e18
+  const MIN_REINVESTMENT_AMOUNT = 1000000;
 
   // Early exit if no balances
-  if (feeAmount0USD.eq(0) && feeAmount1USD.eq(0)) {
+  if (
+    (feeAmount0USD.eq(0) && feeAmount1USD.eq(0)) ||
+    (feeAmount0USD.lt(1 * ethers.constants.WeiPerEther) &&
+      feeAmount1USD.lt(1 * ethers.constants.WeiPerEther))
+  ) {
     return {
       swapAmount: BigNumber.from(0),
       tokenIn: ethers.constants.AddressZero,

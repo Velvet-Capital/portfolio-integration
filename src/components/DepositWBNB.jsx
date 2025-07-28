@@ -1,18 +1,31 @@
-import { useState } from 'react';
-import { useMetaMask } from '../contexts/MetaMaskContext';
-import { ethers } from 'ethers';
-import { PORTFOLIO_ABI } from '../config/contracts';
+import { useState } from "react";
+import { useMetaMask } from "../contexts/MetaMaskContext";
+import { ethers } from "ethers";
+import { PORTFOLIO_ABI } from "../config/contracts";
 import { PERMIT2_ADDRESS, AllowanceTransfer } from "@uniswap/permit2-sdk";
-import './DepositWBNB.css';
-import { depositBatchAddress, DEPOSIT_BATCH_ABI, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ABI, VENUS_ASSET_HANDLER_ABI, PRICE_ORACLE_ABI, ZERO_ADDRESS, venusAssetHandlerAddress, ERC20_ABI,priceOracleAddress, tokenBalanceLibraryAddress, swapVerificationLibraryAddress, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS } from '../config/contracts';
-import axios from 'axios';
-import qs from 'qs';
-import { createDepositBatchDataWithEnso } from '../config/helper';
-
+import "./DepositWBNB.css";
+import {
+  depositBatchAddress,
+  DEPOSIT_BATCH_ABI,
+  ASSET_MANAGEMENT_CONFIG_ABI,
+  POSITION_MANAGER_ABI,
+  VENUS_ASSET_HANDLER_ABI,
+  PRICE_ORACLE_ABI,
+  ZERO_ADDRESS,
+  venusAssetHandlerAddress,
+  ERC20_ABI,
+  priceOracleAddress,
+  tokenBalanceLibraryAddress,
+  swapVerificationLibraryAddress,
+  AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,
+} from "../config/contracts";
+import axios from "axios";
+import qs from "qs";
+import { createDepositBatchDataWithEnso } from "../config/helper";
 
 // Permit2 ABI
 const PERMIT2_ABI = [
-  "function allowance(address owner, address token, address spender) view returns (uint160 amount, uint48 expiration, uint48 nonce)"
+  "function allowance(address owner, address token, address spender) view returns (uint160 amount, uint48 expiration, uint48 nonce)",
 ];
 
 const DepositWBNB = ({ portfolio }) => {
@@ -21,8 +34,8 @@ const DepositWBNB = ({ portfolio }) => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [amount, setAmount] = useState('');
-  const [tokenAddress, setTokenAddress] = useState('');
+  const [amount, setAmount] = useState("");
+  const [tokenAddress, setTokenAddress] = useState("");
 
   const toDeadline = (expiration) => {
     return Math.floor((Date.now() + expiration) / 1000);
@@ -43,40 +56,47 @@ const DepositWBNB = ({ portfolio }) => {
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount to deposit');
+      setError("Please enter a valid amount to deposit");
       return;
     }
 
     setLoading(true);
     setError(null);
     setSuccess(false);
-    setNotification('Starting WBNB deposit process...');
+    setNotification("Starting WBNB deposit process...");
 
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
       const chainId = (await provider.getNetwork()).chainId;
-      const depositBatch = new ethers.Contract(depositBatchAddress, DEPOSIT_BATCH_ABI, signer);
+      const depositBatch = new ethers.Contract(
+        depositBatchAddress,
+        DEPOSIT_BATCH_ABI,
+        signer
+      );
       const portfolioContract = new ethers.Contract(
         portfolio.portfolioAddress,
         PORTFOLIO_ABI,
         signer
-    );
+      );
 
-    const assetManagementConfig = new ethers.Contract(
+      const assetManagementConfig = new ethers.Contract(
         await portfolioContract.assetManagementConfig(),
         ASSET_MANAGEMENT_CONFIG_ABI,
         signer
-    );
-    const minPortfolioTokenHoldingAmount = await getMinPortfolioTokenHoldingAmount(assetManagementConfig.address);
-    console.log("minPortfolioTokenHoldingAmount", minPortfolioTokenHoldingAmount);
+      );
+      const minPortfolioTokenHoldingAmount = 10000;
+      console.log(
+        "minPortfolioTokenHoldingAmount",
+        minPortfolioTokenHoldingAmount
+      );
 
-
-
-    if (ethers.BigNumber.from(amount).lt(minPortfolioTokenHoldingAmount)) {
-      setError(`Deposit amount must be greater than ${minPortfolioTokenHoldingAmount} wei`);
-      return;
-    }
+      if (ethers.BigNumber.from(amount).lt(minPortfolioTokenHoldingAmount)) {
+        setError(
+          `Deposit amount must be greater than ${minPortfolioTokenHoldingAmount} wei`
+        );
+        return;
+      }
 
       // Get portfolio contract
       let depositToken = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
@@ -110,7 +130,8 @@ const DepositWBNB = ({ portfolio }) => {
         amount
       );
 
-      console.log({ positionWrappers,
+      console.log({
+        positionWrappers,
         positionWrapperIndex,
         swapTokens,
         isExternalPosition,
@@ -124,7 +145,8 @@ const DepositWBNB = ({ portfolio }) => {
         feeTiers,
         amountsMin0,
         amountsMin1,
-        swapDeployer})
+        swapDeployer,
+      });
 
       const depositTx = await depositBatch.multiTokenSwapETHAndTransfer(
         {
@@ -154,26 +176,21 @@ const DepositWBNB = ({ portfolio }) => {
         {
           value: amount,
           gasLimit: 10000000,
-
         }
       );
 
-
-
-      setNotification('Waiting for deposit transaction to be mined...');
+      setNotification("Waiting for deposit transaction to be mined...");
       await depositTx.wait();
 
-      
-      setNotification('Deposit completed successfully!');
+      setNotification("Deposit completed successfully!");
       setSuccess(true);
     } catch (err) {
-      console.error('Error during deposit:', err);
-      setError(err.message || 'Failed to deposit tokens. Please try again.');
+      console.error("Error during deposit:", err);
+      setError(err.message || "Failed to deposit tokens. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-
 
   const isValidAddress = (address) => {
     return (
@@ -222,30 +239,31 @@ const DepositWBNB = ({ portfolio }) => {
 
   function divideAmountEqually(amount, tokenCount) {
     const amountPerToken = ethers.BigNumber.from(amount).div(tokenCount);
-  
+
     const depositAmounts = new Array(tokenCount).fill(amountPerToken);
     for (let i = 0; i < tokenCount; i++) {
       depositAmounts[i] = amountPerToken;
     }
-  
+
     return depositAmounts;
   }
-  
 
- 
- const getMinPortfolioTokenHoldingAmount = async (assetManagerAddress) => {
+  const getMinPortfolioTokenHoldingAmount = async (assetManagerAddress) => {
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      
-      const contract = new ethers.Contract(assetManagerAddress, ASSET_MANAGEMENT_CONFIG_ABI, provider);
+
+      const contract = new ethers.Contract(
+        assetManagerAddress,
+        ASSET_MANAGEMENT_CONFIG_ABI,
+        provider
+      );
       return await contract.minPortfolioTokenHoldingAmount();
     } catch (e) {
-      console.error('Error:', e);
+      console.error("Error:", e);
       throw e;
     }
   };
-  const sleep = (ms) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   return (
     <div className="deposit-wbnb">
@@ -274,22 +292,22 @@ const DepositWBNB = ({ portfolio }) => {
         disabled={loading || !amount}
         className="deposit-button"
       >
-        {loading ? 'Processing Deposit...' : 'Deposit BNB'}
+        {loading ? "Processing Deposit..." : "Deposit BNB"}
       </button>
-      
+
       {notification && (
         <div className="notification">
           <p>{notification}</p>
         </div>
       )}
-      
+
       {error && (
         <div className="error">
           <p>{error}</p>
           <button onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
-      
+
       {success && (
         <div className="success">
           <p>Successfully deposited {amount} tokens!</p>
@@ -299,4 +317,4 @@ const DepositWBNB = ({ portfolio }) => {
   );
 };
 
-export default DepositWBNB; 
+export default DepositWBNB;
