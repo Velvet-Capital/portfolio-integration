@@ -8,6 +8,9 @@ import { API_URL } from '../config/contracts';
 import axios from 'axios';
 import { BigNumber } from "ethers";
 import qs from 'qs';
+import { chainIdToAddresses } from '../config/networkVariables';
+
+const addresses = chainIdToAddresses[56];
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -133,6 +136,7 @@ const RebalancePortfolio = ({ portfolio }) => {
             const finalTokens = oldtokens.filter(token => token !== tokenIn);
             let newTokens = [
                 ...finalTokens,
+                tokenOut
             ]
             let oldTokenSetup = [position, ...finalTokens]
             console.log("oldTokenSetup", oldTokenSetup);
@@ -233,7 +237,7 @@ const RebalancePortfolio = ({ portfolio }) => {
                     "bytes[][]",
                     "address[][]",
                     "address[]",
-                    "address[]",
+                    "address[][]",
                     "address[][]",
                     "uint256[][]",
                 ],
@@ -243,7 +247,7 @@ const RebalancePortfolio = ({ portfolio }) => {
                     [[]],
                     [[]],
                     [],
-                    sellToken,
+                    [sellToken],
                     [[tokenOut]],
                     [[0]],
                 ]
@@ -264,8 +268,13 @@ const RebalancePortfolio = ({ portfolio }) => {
                 _callData: encodedParameters,
             }, { gasLimit: 1000000 });
 
+            
+
             setNotification('Waiting for transaction to be mined...');
             await tx.wait();
+            // const tx2 = await rebalancing.enableCollateralTokens([tokenOut], addresses.corePool_controller);
+
+            // await tx2.wait();
 
             setNotification('Rebalancing completed successfully!');
             setSuccess(true);
