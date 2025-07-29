@@ -130,6 +130,12 @@ async function getDepositAmounts(
     // Get comptroller address
     const comptrollerAddress = "0xfD36E2c2a6789Db23113685031d7F16329158384";
 
+    const venusAssetHandler = new ethers.Contract(
+      venusAssetHandlerAddress,
+      VENUS_ASSET_HANDLER_ABI,
+      provider
+    );
+
     // Get all account data in one call
     const [accountData, tokenAddresses] =
       await venusAssetHandler.callStatic.getUserAccountData(
@@ -916,14 +922,16 @@ function getSwapInfoToDesiredRatioBN(
   token0,
   token1
 ) {
+  console.log("here")
   const scale = BigNumber.from("1000000000000000000"); // 1e18
+  console.log("scale", scale);
   const MIN_REINVESTMENT_AMOUNT = 1000000;
 
   // Early exit if no balances
   if (
     (feeAmount0USD.eq(0) && feeAmount1USD.eq(0)) ||
-    (feeAmount0USD.lt(1 * ethers.constants.WeiPerEther) &&
-      feeAmount1USD.lt(1 * ethers.constants.WeiPerEther))
+    (feeAmount0USD.lt(ethers.utils.parseEther("1")) &&
+      feeAmount1USD.lt(ethers.utils.parseEther("1")))
   ) {
     return {
       swapAmount: BigNumber.from(0),
