@@ -6,6 +6,7 @@ import './RebalancePortfolio.css';
 import { ENSO_HANDLER_ADDRESS } from '../config/contracts';
 import { API_URL } from '../config/contracts';
 import axios from 'axios';
+import { BigNumber } from "ethers";
 import qs from 'qs';
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -52,11 +53,15 @@ const RebalancePortfolio = ({ portfolio }) => {
                 signer
             );
 
+            const config = await portfolioContract.assetManagementConfig();
+
             const assetManagementConfig = new ethers.Contract(
-                portfolio.assetManagementConfig,
+                config,
                 ASSET_MANAGEMENT_CONFIG_ABI,
-                signer
+                provider
             );
+
+            const oldtokens = await portfolioContract.getTokens();
             const positionManagerAddress = await assetManagementConfig.lastDeployedPositionManager();
             console.log("Raw position manager address:", positionManagerAddress);
 
@@ -69,7 +74,7 @@ const RebalancePortfolio = ({ portfolio }) => {
             console.log(portfolio);
             console.log("portfolio.positionIndex", portfolio.positionIndex);
             const positionIndex = portfolio.positionList.length;
-            const position = await positionManager.deployedPositionWrappers(positionIndex - 1);
+            const position = await positionManager.deployedPositionWrappers(0);
             console.log("position", position);
 
             const psoitionWrapper = new ethers.Contract(position, POSITION_WRAPPER_ABI, signer);
@@ -83,36 +88,36 @@ const RebalancePortfolio = ({ portfolio }) => {
             console.log("tokens_______________________________", tokens);
             let sellToken = [tokenIn]; // wbnb
             let buyToken = position; // usdc
-            let token0; // oldO
-            let token1;
-            let MIN_TICK;
-            let MAX_TICK;
+            let token0 = "0x2170Ed0880ac9A755fd29B2688956BD959F933F8" // oldO
+            let token1 = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+            let MIN_TICK = 12480
+            let MAX_TICK = 16860
 
             // create the first position for WBNB and ETH  I also created Position1Wapper 
 
             // create a new position
             console.log("position", position);
-            try {
-                const response = await fetch(`${API_URL}/positions/${position}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch position data');
-                }
-                const positionData = await response.json();
-                console.log('Position data:', positionData);
-                token0 = positionData.token1Address;
-                token1 = positionData.token2Address;
-                MIN_TICK = positionData.minTick;
-                MAX_TICK = positionData.maxTick;
-                console.log('token0', token0);
-                console.log('token1', token1);
-                console.log('MIN_TICK', MIN_TICK);
-                console.log('MAX_TICK', MAX_TICK);
-            } catch (error) {
-                console.error('Error fetching position data:', error);
-                setError('Failed to fetch position data. Please try again.');
-                setLoading(false);
-                return;
-            }
+            // try {
+            //     const response = await fetch(`${API_URL}/positions/${position}`);
+            //     if (!response.ok) {
+            //         throw new Error('Failed to fetch position data');
+            //     }
+            //     const positionData = await response.json();
+            //     console.log('Position data:', positionData);
+            //     token0 = positionData.token1Address;
+            //     token1 = positionData.token2Address;
+            //     MIN_TICK = positionData.minTick;
+            //     MAX_TICK = positionData.maxTick;
+            //     console.log('token0', token0);
+            //     console.log('token1', token1);
+            //     console.log('MIN_TICK', MIN_TICK);
+            //     console.log('MAX_TICK', MAX_TICK);
+            // } catch (error) {
+            //     console.error('Error fetching position data:', error);
+            //     setError('Failed to fetch position data. Please try again.');
+            //     setLoading(false);
+            //     return;
+            // }
 
 
 
@@ -125,10 +130,14 @@ const RebalancePortfolio = ({ portfolio }) => {
             // This is 
 
             // new position would only have one token 
+            const finalTokens = oldtokens.filter(token => token !== tokenIn);
             let newTokens = [
-                position
+                ...finalTokens,
             ]
-
+            let oldTokenSetup = [position, ...finalTokens]
+            console.log("oldTokenSetup", oldTokenSetup);
+            console.log("position", position);
+            console.log("new Tokens:", newTokens);
 
             const ensoHandler = ENSO_HANDLER_ADDRESS;
 
@@ -150,9 +159,10 @@ const RebalancePortfolio = ({ portfolio }) => {
 
             // Get current WBNB balance in vault
             setNotification('Getting current WBNB balance...');
-            const sellTokenBalance = ethers.BigNumber.from(
+            let sellTokenBalance = ethers.BigNumber.from(
                 await new ethers.Contract(tokenIn, ERC20_ABI, signer).balanceOf(vault)
             ).toString();
+
 
             // let depositAmounts = await calculateDepositAmounts(
             //     tokenOut,// usdc 
@@ -178,16 +188,16 @@ const RebalancePortfolio = ({ portfolio }) => {
             // WBNB to eth 
 
 
-            let callDataIncreaseLiquidity = [[]];
+            // let callDataIncreaseLiquidity = [[]];
 
             // Step 1: Create approval calldata
             setNotification('Preparing approval calldata...');
             let ABIApprove = ["function approve(address spender, uint256 amount)"];
             let abiEncodeApprove = new ethers.utils.Interface(ABIApprove);
-            callDataIncreaseLiquidity[0][0] = abiEncodeApprove.encodeFunctionData(
-                "approve",
-                [positionManagerAddress, postResponse0.data.amountOut]
-            );
+            // callDataIncreaseLiquidity[0][0] = abiEncodeApprove.encodeFunctionData(
+            //     "approve",
+            //     [positionManagerAddress, postResponse0.data.amountOut]
+            // );
 
             // Step 2: Create calldata for initializing and depositing
             setNotification('Preparing position initialization calldata...');
@@ -196,20 +206,20 @@ const RebalancePortfolio = ({ portfolio }) => {
             ];
             let abiEncode = new ethers.utils.Interface(ABI);
 
-            callDataIncreaseLiquidity[0][1] = abiEncode.encodeFunctionData(
-                "initializePositionAndDeposit",
-                [
-                    account,
-                    newTokens[0],
-                    {
-                        _amount0Desired: 0,  // usdc here would be usdc balance 
-                        _amount1Desired: (Number(postResponse0.data.amountOut) * 0.999).toFixed(0),
-                        _amount0Min: 0,
-                        _amount1Min: 0,
-                        _deployer: ZERO_ADDRESS,
-                    },
-                ]
-            );
+            // callDataIncreaseLiquidity[0][1] = abiEncode.encodeFunctionData(
+            //     "initializePositionAndDeposit",
+            //     [
+            //         account,
+            //         newTokens[0],
+            //         {
+            //             _amount0Desired: 0,  // usdc here would be usdc balance 
+            //             _amount1Desired: (Number(postResponse0.data.amountOut) * 0.999).toFixed(0),
+            //             _amount0Min: 0,
+            //             _amount1Min: 0,
+            //             _deployer: ZERO_ADDRESS,
+            //         },
+            //     ]
+            // );
 
             // only had WBNB in my profolio now I should have usdc and ETh 
             // divide wbnb in halfs and swap them for usdc and eth 
@@ -230,11 +240,11 @@ const RebalancePortfolio = ({ portfolio }) => {
                 [
                     callDataEnso,
                     [],
-                    callDataIncreaseLiquidity,
-                    [[tokenOut, positionManagerAddress]],
+                    [[]],
+                    [[]],
                     [],
                     sellToken,
-                    [[position]],
+                    [[tokenOut]],
                     [[0]],
                 ]
             );
@@ -252,7 +262,7 @@ const RebalancePortfolio = ({ portfolio }) => {
                 _sellAmounts: [sellTokenBalance],
                 _handler: ensoHandler,
                 _callData: encodedParameters,
-            });
+            }, { gasLimit: 1000000 });
 
             setNotification('Waiting for transaction to be mined...');
             await tx.wait();
@@ -319,7 +329,7 @@ const RebalancePortfolio = ({ portfolio }) => {
             slippage: 700,
             tokenIn: _tokenIn,
             tokenOut: _tokenOut,
-            routingStrategy: "delegate-legacy",
+            routingStrategy: "delegate",
         };
 
         console.log("params", params);
