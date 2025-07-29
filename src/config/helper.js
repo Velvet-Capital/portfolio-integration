@@ -455,7 +455,8 @@ export async function getWithdrawBatchData(
     swapVerificationLibraryAddress,
     amountCalculationsAddress,
     portfolioCalculationsAddress,
-    userAddress
+    userAddress,
+    portfolioTokenWithdrawAmount
   );
   const portfolio = new ethers.Contract(
     portfolioAddress,
@@ -466,9 +467,6 @@ export async function getWithdrawBatchData(
 
   let swapTokens = reinvestmentSwapInfo.swapTokens;
 
-  const amountPortfolioToken = BigNumber.from(
-    await portfolio.balanceOf(userAddress)
-  );
   const lendTokenToAmountIndex = new Map();
   for (let i = 0; i < lendTokens.length; i++) {
     lendTokenToAmountIndex.set(lendTokens[i], i);
@@ -486,7 +484,7 @@ export async function getWithdrawBatchData(
         );
         const vaultBalance = await tokenContract.balanceOf(vault);
         const userShare = vaultBalance
-          .mul(amountPortfolioToken)
+          .mul(portfolioTokenWithdrawAmount)
           .div(await portfolio.totalSupply());
         const amountIndex = lendTokenToAmountIndex.get(swapTokens[i]);
         console.log("amountToSell[amountIndex]:", amountToSell[amountIndex]);
@@ -549,7 +547,8 @@ export async function getFlashLoanData(
   swapVerificationLibraryAddress,
   amountCalculationsAddress,
   portfolioCalculationsAddress,
-  userAddress
+  userAddress,
+  portfolioTokenWithdrawAmount
 ) {
   const addresses = chainIdToAddresses[56];
 
@@ -589,7 +588,7 @@ export async function getFlashLoanData(
     flashLoanToken = addresses.USDT;
     poolFees = { poolFees: [[]] }; // Empty pool fees
     thenaPoolInfo = {
-      _factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+      _factory: "0x30055F87716d3DFD0E5198C27024481099fB4A98",
       _token0: addresses.USDT,
       _token1: addresses.USDC_Address,
       _flashLoanToken: addresses.USDT
@@ -641,7 +640,7 @@ export async function getFlashLoanData(
       flashLoanToken = addresses.USDT;
       poolFees = { poolFees: [[]] }; // Default empty pool fees
       thenaPoolInfo = {
-        _factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+        _factory: "0x30055F87716d3DFD0E5198C27024481099fB4A98",
         _token0: addresses.USDT,
         _token1: addresses.USDC_Address,
         _flashLoanToken: addresses.USDT
@@ -658,9 +657,6 @@ export async function getFlashLoanData(
 
   let flashloanBufferUnit = 18; //Flashloan buffer unit in 1/10000, extra flashlaon to take, to fulfil the swap(from flashlaon to debt token)
   let bufferUnit = 280; //Buffer unit for collateral amount in 1/100000, extra collateral to take, to fulfil the swap(from collateral underlying to flashlaon token)
-  const amountPortfolioToken = BigNumber.from(
-    await portfolio.balanceOf(userAddress)
-  );
 
   const portfolioCalculations = new ethers.Contract(
     portfolioCalculationsAddress,
@@ -674,7 +670,7 @@ export async function getFlashLoanData(
       vault,
       addresses.corePool_controller,
       venusAssetHandlerAddress,
-      amountPortfolioToken,
+      portfolioTokenWithdrawAmount,
       flashloanBufferUnit
     );
 
@@ -714,24 +710,24 @@ export async function getFlashLoanData(
       borrowTokens,
       tokens,
       debtRepayAmount,
-      "10", // 10 basis from thena pool fee(can be fetched from thena)
+      "1000", // Need to fetch from thena pool
       bufferUnit
     );
-
+  
   if (values[3].length != 0) {
     if (values[3].length > 1) {
       flashLoanAmounts.push(values[1]);
     } else {
       let borrowedToken = values[3][0]; // In vToken format
-      console.log("borrowedToken:", borrowedToken);
+      console.log("borrowedToken:", borrowedToken.toString());
       const balanceBorrowed =
         await portfolioCalculations.getVenusTokenBorrowedBalance(
           [borrowedToken],
           vault
         );
-      console.log("balanceBorrowed:", balanceBorrowed);
+      console.log("balanceBorrowed:", balanceBorrowed.toString());
       let borrowed = balanceBorrowed[0]
-        .mul(amountPortfolioToken)
+        .mul(portfolioTokenWithdrawAmount)
         .div(await portfolio.totalSupply());
       flashLoanAmounts.push([borrowed.toString()]);
     }

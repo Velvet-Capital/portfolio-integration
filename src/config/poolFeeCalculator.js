@@ -44,7 +44,7 @@ export class PoolFeeCalculator {
       return {
         flashLoanProtocolToken: addresses.vUSDT_Address,
         flashLoanToken: addresses.USDT,
-        thenaFactory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+        thenaFactory: "0x30055F87716d3DFD0E5198C27024481099fB4A98",
         thenaToken0: addresses.USDT,
         thenaToken1: addresses.USDC_Address
       };
@@ -105,7 +105,7 @@ export class PoolFeeCalculator {
           console.log(`✅ Found Thena pool: ${token0} - ${token1}`);
           console.log(`✅ Flash loan token ${flashLoanToken} is in this pool`);
           return {
-            factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+            factory: "0x30055F87716d3DFD0E5198C27024481099fB4A98",
             token0: token0,
             token1: token1
           };
@@ -131,7 +131,7 @@ export class PoolFeeCalculator {
           const [token0, token1] = this.sortTokens(flashLoanToken, fallbackToken);
           console.log(`✅ Found fallback pool: ${token0} - ${token1}`);
           return {
-            factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+            factory: "0x30055F87716d3DFD0E5198C27024481099fB4A98",
             token0: token0,
             token1: token1
           };
@@ -142,7 +142,7 @@ export class PoolFeeCalculator {
     // Final fallback - use a pool that definitely contains the flash loan token
     console.log(`⚠️ No pool found with ${flashLoanToken}, using default pool`);
     return {
-      factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+      factory: "0x30055F87716d3DFD0E5198C27024481099fB4A98",
       token0: flashLoanToken, // Ensure flash loan token is in the pool
       token1: addresses.USDT,  // Pair with USDT
     };
@@ -160,7 +160,7 @@ export class PoolFeeCalculator {
       ];
       
       const thenaFactory = new ethers.Contract(
-        "0x306F06C147f064A010530292A1EB6737c3e378e4",
+        "0x30055F87716d3DFD0E5198C27024481099fB4A98",
         thenaFactoryABI,
         this.provider // FIXED: Use this.provider instead of ethers.provider
       );

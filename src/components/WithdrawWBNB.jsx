@@ -19,7 +19,7 @@ import { chainIdToAddresses } from "../config/networkVariables";
 const addresses = chainIdToAddresses[56];
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const thenaFactory = "0x306f06c147f064a010530292a1eb6737c3e378e4";
+const thenaFactory = "0x30055F87716d3DFD0E5198C27024481099fB4A98";
 const ensoHandlerAddress = "0x3dd84Be9bF8019c6c7A9E8E1682A9a707b2FB79b";
 const tokenToSwapInto = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
 const swapHandler = "0x8317430C7B3873e63467276eBDBC6be91d7c747E";
@@ -185,7 +185,7 @@ const WithdrawWBNB = ({ portfolio }) => {
       console.log("here");
 
       console.log("withdrawBatchAddress", withdrawBatchAddress);
-      console.log("portfolio.portfolioAddress", WITHDRAW_MANAGER_ABI);
+      console.log("withdrawManager ABI", WITHDRAW_MANAGER_ABI);
       console.log("signer", signer);
 
       const withdrawManager = new ethers.Contract(
@@ -209,7 +209,7 @@ const WithdrawWBNB = ({ portfolio }) => {
           _token0: thenaPoolInfo._token0,
           _token1: thenaPoolInfo._token1,
           _flashLoanToken: flashLoanToken,
-          _bufferUnit: "280",
+          _bufferUnit: "300",
           _solverHandler: ensoHandlerAddress,
           _flashLoanAmount: flashLoanAmounts,
           firstSwapData: [["0x"]],
@@ -243,6 +243,7 @@ const WithdrawWBNB = ({ portfolio }) => {
       setSuccess(true);
       setNotification("Withdrawal completed successfully!");
     } catch (err) {
+      console.log("IN CATCH")
       console.error("Error during withdrawal:", err);
       if (err.code === 4001) {
         setError("Transaction was rejected by user");
