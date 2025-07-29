@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 // Contract Addresses
-export const PORTFOLIO_FACTORY_ADDRESS = import.meta.env.VITE_PORTFOLIO_FACTORY_ADDRESS;
-export const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
+export const PORTFOLIO_FACTORY_ADDRESS = "0xd683eB75797FaCd7B18E97A8F1aDe660486B1DbC"
+export const TREASURY_ADDRESS = "0x04d740D2D93AF7417060Ec7b35415c81820470d0"
 
 // Protocol Configuration
 export const THENA_PROTOCOL_HASH = ethers.utils.keccak256(
@@ -4690,9 +4690,9 @@ export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ABI = [
 ];
 
 // Contract Addresses
-export const TOKEN_BALANCE_LIBRARY_ADDRESS = import.meta.env.VITE_TOKEN_BALANCE_LIBRARY_ADDRESS;
-export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS = import.meta.env.VITE_SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS;
-export const ENSO_HANDLER_ADDRESS = import.meta.env.VITE_ENSO_HANDLER_ADDRESS;
+export const TOKEN_BALANCE_LIBRARY_ADDRESS = "0xA769Fc0Eb074af2a7cd126555D8c87802739E9b2";
+export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS = "0xE440CBE1fdcf83F70d3E298bFc844265C1b35e41";
+export const ENSO_HANDLER_ADDRESS = "0x3dd84Be9bF8019c6c7A9E8E1682A9a707b2FB79b";
 export const POSITION_MANAGER_ABI = [
   "function getDeployedPositionWrappersLength() view returns (uint256)",
   "function deployedPositionWrappers(uint256) view returns (address)",
@@ -6587,7 +6587,7 @@ export const AMOUNT_CALCULATIONS_ALGEBRA_ABI = [
   }
 ]
 
-export const AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS = "0xF450C285f7D51A5c1Eb715b435F483E4Fa8FdC91"
+export const AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS = "0xdcA46f2575BD85E3CaaafA34AA457c77C15d6B75"
 
 export const DEPOSIT_BATCH_ABI = [
   {
@@ -6881,9 +6881,9 @@ export const DEPOSIT_BATCH_ABI = [
   }
 ]
 
-export const depositBatchAddress = "0x784DA05C313Cf8e7D6aFB5EeDbB96990eF59Df21"
+export const depositBatchAddress = "0x35850ffadf4a862aFc1fA1E24daB3A778204F94D"
 
-export const priceOracleAddress = "0xd9a4D16D818AfDD759dF7413485997847F6Ae6d8"
+export const priceOracleAddress = "0x139Dd769394FF8eDE4A0aC927a58cC9fe80Ca4E2"
 
 export const PRICE_ORACLE_ABI = [
   {
@@ -7182,7 +7182,7 @@ export const PRICE_ORACLE_ABI = [
   }
 ]
 
-export const venusAssetHandlerAddress = "0xB0f8AFf76e809503E03E4F48A0C241Fd499A8A13"
+export const venusAssetHandlerAddress = "0xae5029268BE9Fb60083d8087a09355AfD4Cb48c2"
 
 export const VENUS_ASSET_HANDLER_ABI = [
   {
@@ -9474,9 +9474,9 @@ export const PORTFOLIO_CALCULATIONS_ABI =  [
   }
 ]
 
-export const portfolioCalculationsAddress = "0x2b8dd8485b62E70e15a8545aa2d6E8be3B6248Fc"
+export const portfolioCalculationsAddress = "0x7183c0D06fE3B7150473731e5E0fDCD32FCcB74c"
 
-export const tokenBalanceLibraryAddress = "0x722A8eB7A49FA925Fc6305a56a379364f865638D"
+export const tokenBalanceLibraryAddress = "0xA769Fc0Eb074af2a7cd126555D8c87802739E9b2"
 
 export const TOKEN_BALANCE_LIBRARY_ABI = [
   {
@@ -9632,12 +9632,12 @@ export const EXTERNAL_POSITION_STORAGE_ABI =[
   }
 ]
 
-export const swapVerificationLibraryAddress = "0x855d95bab7256e4DC4d36639EDaf5536b18a1324"
+export const swapVerificationLibraryAddress = "0xE440CBE1fdcf83F70d3E298bFc844265C1b35e41"
 
 
-export const withdrawBatchAddress="0x612043fa5D0021AD0D3A9A0bE86018e479a27F98"
+export const withdrawBatchAddress="0x2c8D1eFD398947Ce967f387E54A8cE2b30E03B60"
 
-export const withdrawManagerAddress="0xb9d5FC7CE2b00e18D9cb93441cE912e6aB8136ef"
+export const withdrawManagerAddress="0x1E0FeE15170D2A1504D862977B46C1a84e154C00"
 
 export const WITHDRAW_MANAGER_ABI= [
   {

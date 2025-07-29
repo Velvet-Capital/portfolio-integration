@@ -20,10 +20,10 @@ const addresses = chainIdToAddresses[56];
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const thenaFactory = "0x306f06c147f064a010530292a1eb6737c3e378e4";
-const ensoHandlerAddress = "0x064d07d417449c253F288A95eeBb62bf9E427DA4";
+const ensoHandlerAddress = "0x3dd84Be9bF8019c6c7A9E8E1682A9a707b2FB79b";
 const tokenToSwapInto = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-const swapHandler = "0xB21F98b6B9d7693bc470EE882E83deD2d0ce5F6E";
-const swapHandlerV3 = "0xA238B85AeC6785f08d41E9e09357d6d82d381b2B";
+const swapHandler = "0x8317430C7B3873e63467276eBDBC6be91d7c747E";
+const swapHandlerV3 = "0x053Bfb69c038F8DaF90d9B0A86743574294fc0B0";
 
 const WithdrawWBNB = ({ portfolio }) => {
   const { account, connect } = useMetaMask();
@@ -131,7 +131,7 @@ const WithdrawWBNB = ({ portfolio }) => {
         .mul(ethers.utils.parseUnits(percentage, 2))
         .div(10000); // Convert percentage to basis points
 
-      const {
+         const {
         reinvestmentSwapInfo: {
           positionWrappers,
           positionWrapperIndex,

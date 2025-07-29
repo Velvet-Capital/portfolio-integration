@@ -712,20 +712,23 @@ export async function getFlashLoanData(
       bufferUnit
     );
 
-  if (values[3].length > 1) {
-    flashLoanAmounts.push(values[1]);
-  } else {
-    let borrowedToken = values[3][0]; // In vToken format
-    const balanceBorrowed =
-      await portfolioCalculations.getVenusTokenBorrowedBalance(
-        [borrowedToken],
-        vault
-      );
-    console.log("balanceBorrowed:", balanceBorrowed);
-    let borrowed = balanceBorrowed[0]
-      .mul(amountPortfolioToken)
-      .div(await portfolio.totalSupply());
-    flashLoanAmounts.push([borrowed.toString()]);
+  if (values[3].length != 0) {
+    if (values[3].length > 1) {
+      flashLoanAmounts.push(values[1]);
+    } else {
+      let borrowedToken = values[3][0]; // In vToken format
+      console.log("borrowedToken:", borrowedToken);
+      const balanceBorrowed =
+        await portfolioCalculations.getVenusTokenBorrowedBalance(
+          [borrowedToken],
+          vault
+        );
+      console.log("balanceBorrowed:", balanceBorrowed);
+      let borrowed = balanceBorrowed[0]
+        .mul(amountPortfolioToken)
+        .div(await portfolio.totalSupply());
+      flashLoanAmounts.push([borrowed.toString()]);
+    }
   }
 
   console.log("flashLoanAmounts:", flashLoanAmounts);
@@ -757,6 +760,9 @@ export async function getWithdrawalAmounts(
     PORTFOLIO_CALCULATIONS_ABI,
     provider
   );
+  console.log("portfolioTokenWithdrawAmount:", portfolioTokenWithdrawAmount);
+  console.log("portfolioAddress:", portfolioAddress);
+  console.log("portfolioCalculationsAddress:", portfolioCalculationsAddress);
   let withdrawalAmounts =
     await portfolioCalculations.callStatic.getWithdrawalAmounts(
       portfolioTokenWithdrawAmount,
