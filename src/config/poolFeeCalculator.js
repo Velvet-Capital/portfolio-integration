@@ -2,10 +2,233 @@
 import { ethers } from "ethers";
 
 export class PoolFeeCalculator {
+
+  static PAIRING_TOKENS = [
+    // Major Stablecoins (highest priority)
+    "0x55d398326f99059ff775485246999027b3197955", // USDT
+    "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", // USDC
+    "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3", // DAI
+    
+    // Major Cryptocurrencies
+    "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c", // WBNB
+    "0x2170ed0880ac9a755fd29b2688956bd959f933f8", // ETH
+    "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c", // BTC
+    
+    // Popular DeFi Tokens
+    "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82", // CAKE
+    "0x603c7f932ed1fc6575303d8fb018fdcbb0f39a95", // APE
+    "0x965f527d9159dce6288a2219db51fc6eef120dd1", // BSW
+    
+    // Add more tokens here as needed...
+    // "0x...", // TOKEN_NAME
+  ];
+
   constructor(factoryAddress, chainId, venusAssetHandler) {
     this.pancakeSwapV3Factory = factoryAddress;
     this.chainId = chainId;
     this.venusAssetHandler = venusAssetHandler;
+    // Create provider instance
+    this.provider = new ethers.providers.JsonRpcProvider(
+      import.meta.env.VITE_RPC_URL
+    );
+  }
+
+  async selectOptimalFlashLoanToken(
+    borrowTokens,
+    lendTokens,
+    addresses
+  ) {
+    console.log("🔍 Selecting optimal flash loan token and Thena pool...");
+    
+    if (borrowTokens.length === 0) {
+      return {
+        flashLoanProtocolToken: addresses.vUSDT_Address,
+        flashLoanToken: addresses.USDT,
+        thenaFactory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+        thenaToken0: addresses.USDT,
+        thenaToken1: addresses.USDC_Address
+      };
+    }
+    
+    if (borrowTokens.length === 1) {
+      const underlyingTokens = await this.getUnderlyingTokens([borrowTokens[0]]);
+      const flashLoanToken = underlyingTokens[0];
+      
+      const bestPool = await this.findBestThenaPool(flashLoanToken, addresses);
+      
+      return {
+        flashLoanProtocolToken: borrowTokens[0],
+        flashLoanToken: flashLoanToken,
+        thenaFactory: bestPool.factory,
+        thenaToken0: bestPool.token0,
+        thenaToken1: bestPool.token1
+      };
+    }
+    
+    // Multiple borrowed tokens - find the best one
+    const tokenAnalyses = await this.analyzeTokensForFlashLoan(borrowTokens, lendTokens, addresses);
+    const bestToken = tokenAnalyses.reduce((best, current) => 
+      current.score > best.score ? current : best
+    );
+    
+    return {
+      flashLoanProtocolToken: bestToken.vToken,
+      flashLoanToken: bestToken.token,
+      thenaFactory: bestToken.thenaFactory,
+      thenaToken0: bestToken.thenaToken0,
+      thenaToken1: bestToken.thenaToken1
+    };
+  }
+
+  /**
+   * Find the best Thena pool for a flash loan token
+   */
+  async findBestThenaPool(
+    flashLoanToken, 
+    addresses
+  ){
+    console.log(` Finding best Thena pool for flash loan token: ${flashLoanToken}`);
+    
+    // Use our pairing tokens list
+    const candidateTokens = PoolFeeCalculator.PAIRING_TOKENS;
+    
+    console.log(`📊 Checking ${candidateTokens.length} candidate tokens for pairing`);
+    
+    // Try each candidate token - flash loan token MUST be one of the pool tokens
+    for (const candidateToken of candidateTokens) {
+      if (candidateToken.toLowerCase() !== flashLoanToken.toLowerCase()) {
+        console.log(`🔍 Checking pool: ${flashLoanToken} - ${candidateToken}`);
+        const poolExists = await this.checkThenaPoolExists(flashLoanToken, candidateToken);
+        if (poolExists) {
+          // flashLoanToken MUST be one of the pool tokens
+          const [token0, token1] = this.sortTokens(flashLoanToken, candidateToken);
+          console.log(`✅ Found Thena pool: ${token0} - ${token1}`);
+          console.log(`✅ Flash loan token ${flashLoanToken} is in this pool`);
+          return {
+            factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+            token0: token0,
+            token1: token1
+          };
+        }
+      }
+    }
+    
+    // Fallback - find any pool that contains the flash loan token
+    console.log(`⚠️ No suitable pool found in pairing list, trying to find any pool with ${flashLoanToken}`);
+    
+    // Try common stablecoins to pair with flash loan token
+    const fallbackTokens = [
+      addresses.USDT,
+      addresses.USDC_Address,
+      addresses.DAI_Address,
+      "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c", // WBNB
+    ];
+    
+    for (const fallbackToken of fallbackTokens) {
+      if (fallbackToken.toLowerCase() !== flashLoanToken.toLowerCase()) {
+        const poolExists = await this.checkThenaPoolExists(flashLoanToken, fallbackToken);
+        if (poolExists) {
+          const [token0, token1] = this.sortTokens(flashLoanToken, fallbackToken);
+          console.log(`✅ Found fallback pool: ${token0} - ${token1}`);
+          return {
+            factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+            token0: token0,
+            token1: token1
+          };
+        }
+      }
+    }
+    
+    // Final fallback - use a pool that definitely contains the flash loan token
+    console.log(`⚠️ No pool found with ${flashLoanToken}, using default pool`);
+    return {
+      factory: "0x306F06C147f064A010530292A1EB6737c3e378e4",
+      token0: flashLoanToken, // Ensure flash loan token is in the pool
+      token1: addresses.USDT,  // Pair with USDT
+    };
+  }
+
+  /**
+   * Check if a Thena pool exists
+   */
+  async checkThenaPoolExists(token0, token1) {
+    try {
+      const [sortedToken0, sortedToken1] = this.sortTokens(token0, token1);
+      
+      const thenaFactoryABI = [
+        "function poolByPair(address _token0, address _token1) external view returns (address)"
+      ];
+      
+      const thenaFactory = new ethers.Contract(
+        "0x306F06C147f064A010530292A1EB6737c3e378e4",
+        thenaFactoryABI,
+        this.provider // FIXED: Use this.provider instead of ethers.provider
+      );
+      
+      const poolAddress = await thenaFactory.poolByPair(sortedToken0, sortedToken1);
+      
+      if (poolAddress !== "0x0000000000000000000000000000000000000000") {
+        // Just check if pool exists, don't worry about exact liquidity
+        console.log(`✅ Pool exists at: ${poolAddress}`);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.log(`❌ Error checking Thena pool: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Get pool liquidity
+   */
+  async getPoolLiquidity(poolAddress) {
+    try {
+      const poolABI = [
+        "function liquidity() view returns (uint128)"
+      ];
+      
+      const pool = new ethers.Contract(poolAddress, poolABI, this.provider);
+      const liquidity = await pool.liquidity();
+      return liquidity.toNumber();
+    } catch (error) {
+      console.log(`❌ Error getting pool liquidity: ${error.message}`);
+      return 0;
+    }
+  }
+
+  /**
+   * Analyze tokens for flash loan selection
+   */
+  async analyzeTokensForFlashLoan(borrowTokens, lendTokens, addresses) {
+    const analyses = [];
+    
+    for (const vToken of borrowTokens) {
+      const underlyingToken = await this.getUnderlyingTokens([vToken]);
+      const token = underlyingToken[0];
+      
+      const bestPool = await this.findBestThenaPool(token, addresses);
+      
+      // Simple scoring based on pool availability
+      let score = 0;
+      if (bestPool.token0 !== addresses.USDT || bestPool.token1 !== addresses.USDC_Address) {
+        score = 100; // Good pool found
+      } else {
+        score = 50; // Using fallback pool
+      }
+      
+      analyses.push({
+        vToken,
+        token,
+        score,
+        thenaFactory: bestPool.factory,
+        thenaToken0: bestPool.token0,
+        thenaToken1: bestPool.token1
+      });
+    }
+    
+    return analyses;
   }
 
   /**
@@ -122,7 +345,7 @@ export class PoolFeeCalculator {
         "function slot0() view returns (uint160 sqrtPriceX96, int24 tick, uint16 observationIndex, uint16 observationCardinality, uint16 observationCardinalityNext, uint8 feeProtocol, bool unlocked)"
       ];
       
-      const pool = new ethers.Contract(poolAddress, poolABI, ethers.provider);
+      const pool = new ethers.Contract(poolAddress, poolABI, this.provider); // Use this.provider
       const liquidity = await pool.liquidity();
       
       let tvl;
@@ -153,7 +376,7 @@ export class PoolFeeCalculator {
   async getPoolAddress(token0, token1, fee) {
     try {
       const factoryABI = ["function getPool(address, address, uint24) view returns (address)"];
-      const factory = new ethers.Contract(this.pancakeSwapV3Factory, factoryABI, ethers.provider);
+      const factory = new ethers.Contract(this.pancakeSwapV3Factory, factoryABI, this.provider); // Use this.provider
       return await factory.getPool(token0, token1, fee);
     } catch (error) {
       return "0x0000000000000000000000000000000000000000";
