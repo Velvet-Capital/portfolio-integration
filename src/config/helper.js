@@ -144,8 +144,8 @@ async function getDepositAmounts(
         []
       );
 
-    const { lendTokens, borrowTokens } = tokenAddresses;
-    const vTokenSet = new Set(lendTokens);
+    // const { lendTokens, borrowTokens } = tokenAddresses;
+    // const vTokenSet = new Set(lendTokens);
 
     // Convert totalDebt to 18 decimals (it's in 8 decimals from Venus)
     const totalDebt18Decimals = accountData.totalDebt.mul(

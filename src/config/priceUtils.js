@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { Contract, BigNumber } from 'ethers';
-import { PORTFOLIO_ABI, ERC20_ABI, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ALGEBRA_ABI, EXTERNAL_POSITION_STORAGE_ABI, POSITION_WRAPPER_ABI, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS } from './contracts';
+import { PORTFOLIO_ABI, ERC20_ABI, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ALGEBRA_ABI, EXTERNAL_POSITION_STORAGE_ABI, POSITION_WRAPPER_ABI, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, VENUS_ASSET_HANDLER_ABI, venusAssetHandlerAddress } from './contracts';
 import axios from 'axios';
 import { calculateOutputAmounts } from './helper';
 
@@ -99,6 +99,21 @@ export const getIndexRate = async (
         let simpleTokens = []
         let finalTokens = [];
         let externalPositionTokens = [];
+        const comptrollerAddress = "0xfD36E2c2a6789Db23113685031d7F16329158384";
+
+        const venusAssetHandler = new ethers.Contract(
+            venusAssetHandlerAddress,
+            VENUS_ASSET_HANDLER_ABI,
+            provider
+        );
+
+        // Lend Tokens and borrow tokens
+        const [accountData, ] =
+            await venusAssetHandler.callStatic.getUserAccountData(
+                vaultAddress,
+                comptrollerAddress,
+                []
+            );
 
         for (const token of tokens) {
             if (await externalPositionStorage.isWrappedPosition(token)) {
@@ -110,7 +125,7 @@ export const getIndexRate = async (
 
                 const token0 = await positionWrapper.token0();
                 const token1 = await positionWrapper.token1();
-            
+
                 positionTokens[token] = {
                     token0,
                     token1,
@@ -129,9 +144,9 @@ export const getIndexRate = async (
 
         const tokenDetails = await fetchTokensDataByAddress(finalTokens);
 
-
-
         let allTokensUSD = BigInt('0');
+
+        const totalDebt = BigInt(accountData.totalDebt.div(BigInt(ethers.BigNumber.from(10).pow(10))));
 
         for (const token of tokens) {
 
@@ -197,7 +212,7 @@ export const getIndexRate = async (
         }
 
 
-        const scaledAllTokensUSD = allTokensUSD * BigInt(ethers.utils.parseEther('1'));
+        const scaledAllTokensUSD = (allTokensUSD - totalDebt) * BigInt(ethers.utils.parseEther('1'));
         const indexRate = scaledAllTokensUSD / BigInt(totalSupply);
 
         return indexRate.toString();
