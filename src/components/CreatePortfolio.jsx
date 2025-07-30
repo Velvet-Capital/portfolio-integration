@@ -7,6 +7,7 @@ import RebalancePortfolio from './RebalancePortfolio';
 import WithdrawWBNB from './WithdrawWBNB';
 import InitToken from './InitToken';
 import Borrow from './Borrow';
+import PortfolioTokens from './PortfolioTokens';
 import './CreatePortfolio.css';
 
 const LM5Portfolio = "0x77b3bFaC49ab8a15200038DBFb9dd9A287371E6C";
@@ -62,10 +63,11 @@ const CreatePortfolio = () => {
             {/* <CreatePosition portfolioAddress={portfolio.portfolioAddress} /> */}
             {/* <InitToken portfolioAddress={portfolio.portfolioAddress} />
             <WBNBApproval portfolio={portfolio} /> */}
+            <PortfolioTokens portfolio={portfolio} />
             <DepositWBNB portfolio={portfolio} />
-            <RebalancePortfolio portfolio={portfolio} />
+            {/* <RebalancePortfolio portfolio={portfolio} /> */}
             <WithdrawWBNB portfolio={portfolio} />
-            <Borrow portfolio={portfolio} />
+            {/* <Borrow portfolio={portfolio} /> */}
           </div>
         </div>
       )}
