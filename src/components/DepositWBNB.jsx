@@ -74,29 +74,8 @@ const DepositWBNB = ({ portfolio }) => {
         DEPOSIT_BATCH_ABI,
         signer
       );
-      const portfolioContract = new ethers.Contract(
-        portfolio.portfolioAddress,
-        PORTFOLIO_ABI,
-        signer
-      );
 
-      const assetManagementConfig = new ethers.Contract(
-        await portfolioContract.assetManagementConfig(),
-        ASSET_MANAGEMENT_CONFIG_ABI,
-        signer
-      );
-      const minPortfolioTokenHoldingAmount = 10000;
-      console.log(
-        "minPortfolioTokenHoldingAmount",
-        minPortfolioTokenHoldingAmount
-      );
-
-      if (ethers.BigNumber.from(amount).lt(minPortfolioTokenHoldingAmount)) {
-        setError(
-          `Deposit amount must be greater than ${minPortfolioTokenHoldingAmount} wei`
-        );
-        return;
-      }
+      const depositAmountInWei = ethers.utils.parseEther(amount);
 
       // Get portfolio contract
       let depositToken = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
@@ -127,7 +106,7 @@ const DepositWBNB = ({ portfolio }) => {
         portfolio.portfolioAddress,
         depositBatchAddress,
         depositToken,
-        amount
+        depositAmountInWei
       );
 
       console.log({
@@ -151,7 +130,7 @@ const DepositWBNB = ({ portfolio }) => {
       const depositTx = await depositBatch.multiTokenSwapETHAndTransfer(
         {
           _minMintAmount: 0,
-          _depositAmount: amount,
+          _depositAmount: depositAmountInWei,
           _target: portfolio.portfolioAddress,
           _depositToken: depositToken,
           _callData: ensoCalldata,
@@ -174,7 +153,7 @@ const DepositWBNB = ({ portfolio }) => {
           _fee: feeTiers,
         },
         {
-          value: amount,
+          value: depositAmountInWei,
           gasLimit: 10000000,
         }
       );
