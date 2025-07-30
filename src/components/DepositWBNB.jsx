@@ -263,7 +263,7 @@ const DepositWBNB = ({ portfolio }) => {
           placeholder="Enter BNB amount"
           className="wbnb-input"
         />
-        <span className="input-suffix">BNB in wei</span>
+        <span className="input-suffix">BNB</span>
       </div>
 
       <button
