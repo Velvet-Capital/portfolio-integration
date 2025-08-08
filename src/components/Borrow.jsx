@@ -94,7 +94,7 @@ const Borrow = ({ portfolio }) => {
         [addresses.vBNB_Address],
         addresses.ETH_Address,
         addresses.corePool_controller,
-        "100000000000000" // $1,
+        "67000000000000" // $1,
         ,{gasLimit: 1000000}
       );
 
