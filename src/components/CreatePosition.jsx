@@ -51,13 +51,17 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
+            console.log("portfolioAddress____________", portfolioAddress);
+
             // Get portfolio info from the database
-            const response = await fetch(`${API_URL}/portfolios/${portfolioAddress}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch portfolio info');
-            }
-            const portfolioInfo = await response.json();
-            console.log("Portfolio info:", portfolioInfo);
+            // const response = await fetch(`${API_URL}/portfolios/${portfolioAddress}`);
+            // if (!response.ok) {
+            //     throw new Error('Failed to fetch portfolio info');
+            // }
+            // const portfolioInfo = await response.json();
+            // console.log("Portfolio info:", portfolioInfo);
+
+
 
             const portfolioContract = new ethers.Contract(
                 portfolioAddress,
@@ -65,13 +69,15 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
                 signer
             );
 
+            const assetManagementConfigAddress = await portfolioContract.assetManagementConfig();
+
             // Attach to AssetManagementConfig
             const assetManagementConfig = new ethers.Contract(
-                portfolioInfo.assetManagementConfig,
+                assetManagementConfigAddress,
                 ASSET_MANAGEMENT_CONFIG_ABI,
                 signer
             );
-            console.log("AssetManagementConfig address:", portfolioInfo.assetManagementConfig);
+            // console.log("AssetManagementConfig address:", portfolioInfo.assetManagementConfig);
 
             // Get position manager address
             const positionManagerAddress = await assetManagementConfig.lastDeployedPositionManager();
@@ -99,7 +105,7 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
                 formData.name || "BNB/ETH Position",
                 formData.symbol || "BNB/ETH",
                 formData.minTick || "-144180",
-                formData.maxTick || "-122100"
+                formData.maxTick || "122100"
             );
 
             console.log("Waiting for position creation transaction...");
@@ -109,58 +115,58 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
             const position1 = await positionManager.deployedPositionWrappers(lengthBefore);
             console.log("New position wrapper address:", position1);
 
-            if (!position1 || position1 === ZERO_ADDRESS) {
-                throw new Error("Position wrapper address is zero or undefined");
-            }
+            // if (!position1 || position1 === ZERO_ADDRESS) {
+            //     throw new Error("Position wrapper address is zero or undefined");
+            // }
 
-            // Update portfolio position list
-            const updateFields = {
-                positionList: portfolioInfo.positionList ? [...portfolioInfo.positionList, position1] : [position1],
-                positionIndex: portfolioInfo.positionIndex ? portfolioInfo.positionIndex + 1 : 0
-            };
-            const updateResponse = await fetch(`${API_URL}/portfolios/${portfolioAddress}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ updateFields })
-            });
-            if (!updateResponse.ok) {
-                throw new Error('Failed to update portfolio info');
-            }
-
-
-            const positionData = {
-                token1Address: formData.token1,
-                token2Address: formData.token2,
-                positionAddress: position1,
-                minTick: formData.minTick,
-                maxTick: formData.maxTick,
-                createdAt: new Date()
-              };
-
-              console.log("positionData", positionData);
+            // // Update portfolio position list
+            // const updateFields = {
+            //     positionList: portfolioInfo.positionList ? [...portfolioInfo.positionList, position1] : [position1],
+            //     positionIndex: portfolioInfo.positionIndex ? portfolioInfo.positionIndex + 1 : 0
+            // };
+            // const updateResponse = await fetch(`${API_URL}/portfolios/${portfolioAddress}`, {
+            //     method: 'PUT',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ updateFields })
+            // });
+            // if (!updateResponse.ok) {
+            //     throw new Error('Failed to update portfolio info');
+            // }
 
 
-            const savePositionResponse = await fetch(`${API_URL}/positions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(positionData)
-            });
-            console.log("savePositionResponse", savePositionResponse);
-            if (!savePositionResponse.ok) {
-                throw new Error('Failed to update portfolio info');
-            }
-            console.log("Initializing portfolio tokens with WBNB...");
-            // Attach to Portfolio contract
-            const portfolio = new ethers.Contract(
-                portfolioAddress,
-                PORTFOLIO_ABI,
-                signer
-            );
-            const initTokenTx = await portfolio.initToken([formData.token1], {
-                gasLimit: 1000000
-            });
-            await initTokenTx.wait();
-            console.log("Portfolio tokens initialized.");
+            // const positionData = {
+            //     token1Address: formData.token1,
+            //     token2Address: formData.token2,
+            //     positionAddress: position1,
+            //     minTick: formData.minTick,
+            //     maxTick: formData.maxTick,
+            //     createdAt: new Date()
+            //   };
+
+            //   console.log("positionData", positionData);
+
+
+            // const savePositionResponse = await fetch(`${API_URL}/positions`, {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(positionData)
+            // });
+            // console.log("savePositionResponse", savePositionResponse);
+            // if (!savePositionResponse.ok) {
+            //     throw new Error('Failed to update portfolio info');
+            // }
+            // console.log("Initializing portfolio tokens with WBNB...");
+            // // Attach to Portfolio contract
+            // const portfolio = new ethers.Contract(
+            //     portfolioAddress,
+            //     PORTFOLIO_ABI,
+            //     signer
+            // );
+            // const initTokenTx = await portfolio.initToken([formData.token1], {
+            //     gasLimit: 1000000
+            // });
+            // await initTokenTx.wait();
+            // console.log("Portfolio tokens initialized.");
 
             setSuccess(true);
             setNotification('Position created successfully!');
