@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 import { Contract, BigNumber } from 'ethers';
-import { PORTFOLIO_ABI, ERC20_ABI, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ALGEBRA_ABI, EXTERNAL_POSITION_STORAGE_ABI, POSITION_WRAPPER_ABI, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, VENUS_ASSET_HANDLER_ABI, venusAssetHandlerAddress } from './contracts';
+import { PORTFOLIO_ABI, ERC20_ABI, ASSET_MANAGEMENT_CONFIG_ABI, POSITION_MANAGER_ALGEBRA_ABI, EXTERNAL_POSITION_STORAGE_ABI, POSITION_WRAPPER_ABI, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, VENUS_ASSET_HANDLER_ABI, venusAssetHandlerAddress, AMOUNT_CALCULATIONS_ALGEBRA_ABI } from './contracts';
 import axios from 'axios';
 import { calculateOutputAmounts } from './helper';
 
@@ -249,3 +249,97 @@ export const getUserInvestedValue = async (portfolioAddress, userAddress, chainI
         };
     }
 };
+
+export const isExternalPosition = async (tokenAddress, portfolioContract) => {
+    try {
+      const config = await portfolioContract.assetManagementConfig();
+      const assetManagementConfig = new ethers.Contract(
+        config, 
+        ASSET_MANAGEMENT_CONFIG_ABI, 
+        portfolioContract.provider
+      );
+
+      const positionManagerAddress = await assetManagementConfig.lastDeployedPositionManager();
+      const positionManager = new ethers.Contract(
+        positionManagerAddress, 
+        POSITION_MANAGER_ALGEBRA_ABI, 
+        portfolioContract.provider
+      );
+
+      const externalPositionStorage = new ethers.Contract(
+        await positionManager.externalPositionStorage(),
+        EXTERNAL_POSITION_STORAGE_ABI,
+        portfolioContract.provider
+      );
+
+      const isWrapped = await externalPositionStorage.isWrappedPosition(tokenAddress);
+      
+      if (isWrapped) {
+        const positionWrapper = new ethers.Contract(
+          tokenAddress,
+          POSITION_WRAPPER_ABI,
+          portfolioContract.provider
+        );
+
+        const token0 = await positionWrapper.token0();
+        const token1 = await positionWrapper.token1();
+
+        return {
+          isExternal: true,
+          token0,
+          token1
+        };
+      } else {
+        return {
+          isExternal: false,
+          token0: null,
+          token1: null
+        };
+      }
+    } catch (error) {
+      console.error("Error checking if token is external position:", error);
+      return {
+        isExternal: false,
+        token0: null,
+        token1: null
+      };
+    }
+  };
+
+  export const calculateDepositAmounts = async (
+    position,
+    newTickLower,
+    newTickUpper,
+    inputAmount
+) => {
+
+    const provider = new ethers.providers.WebSocketProvider(import.meta.env.VITE_WSS_URL);
+    
+    const amountCalculationsAlgebra = new ethers.Contract(AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, AMOUNT_CALCULATIONS_ALGEBRA_ABI, provider);
+    // Get amounts for new price range (to calculate the ratio)
+    let amounts =
+        await amountCalculationsAlgebra.callStatic.getRatioAmountsForTicks(
+            position,
+            newTickLower,
+            newTickUpper
+        );
+
+    // Convert amount0, amount1 to USD (here we use stable coins for testing so we can skip)
+
+    // Get the ratios the tokens should be swapped to
+    let ratio0 =
+        Number(BigNumber.from(amounts.amount0)) /
+        Number(
+            BigNumber.from(amounts.amount0).add(BigNumber.from(amounts.amount1))
+        );
+    let ratio1 =
+        Number(BigNumber.from(amounts.amount1)) /
+        Number(
+            BigNumber.from(amounts.amount0).add(BigNumber.from(amounts.amount1))
+        );
+
+    let amount0 = (Number(BigNumber.from(inputAmount)) * ratio0).toFixed(0);
+    let amount1 = (Number(BigNumber.from(inputAmount)) * ratio1).toFixed(0);
+
+    return { amount0, amount1 };
+}

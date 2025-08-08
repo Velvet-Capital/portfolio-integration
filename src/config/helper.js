@@ -189,6 +189,7 @@ async function getDepositAmounts(
         // External positions are typically not used as collateral
       } else if (vTokenSet.has(token)) {
         // It's a vToken - check if it's collateral
+        // borrow logic need to confirm this with akarsh
         const isCollateral = await venusAssetHandler.isCollateralEnabled(
           token,
           vaultAddress,
@@ -595,13 +596,13 @@ export async function getFlashLoanData(
     };
   } else {
     console.log(`🔍 ${borrowTokens.length === 1 ? 'Single' : 'Multiple'} borrowed tokens - selecting optimal flash loan token`);
-    
+
     const calculator = new PoolFeeCalculator(
       addresses.PancakeSwapV3FactoryAddress,
       56,
       venusAssetHandler
     );
-    
+
     try {
       // Get optimal flash loan token AND Thena pool info
       const flashLoanSelection = await calculator.selectOptimalFlashLoanToken(
@@ -609,10 +610,10 @@ export async function getFlashLoanData(
         lendTokens,
         addresses
       );
-      
+
       flashLoanProtocolToken = flashLoanSelection.flashLoanProtocolToken;
       flashLoanToken = flashLoanSelection.flashLoanToken;
-      
+
       // Calculate pool fees
       poolFees = await calculator.getPoolFeesForWithdrawal(
         flashLoanToken,
@@ -620,21 +621,21 @@ export async function getFlashLoanData(
         lendTokens,
         addresses
       );
-      
+
       thenaPoolInfo = {
         _factory: flashLoanSelection.thenaFactory,
         _token0: flashLoanSelection.thenaToken0,
         _token1: flashLoanSelection.thenaToken1,
         _flashLoanToken: flashLoanSelection.flashLoanToken
       };
-      
+
       console.log("Selected flash loan token:", flashLoanToken);
       console.log("Selected Thena pool:", thenaPoolInfo);
-      
+
     } catch (error) {
       console.log(`❌ Error in flash loan selection: ${error.message}`);
       console.log("⚠️ Falling back to default USDT flash loan");
-      
+
       // Fallback to USDT
       flashLoanProtocolToken = addresses.vUSDT_Address;
       flashLoanToken = addresses.USDT;
@@ -647,7 +648,7 @@ export async function getFlashLoanData(
       };
     }
   }
-  
+
   console.log("Selected flash loan protocol token:", flashLoanProtocolToken);
   console.log("Selected flash loan token:", flashLoanToken);
   console.log("Token0:", thenaPoolInfo._token0);
@@ -713,7 +714,7 @@ export async function getFlashLoanData(
       "1000", // Need to fetch from thena pool
       bufferUnit
     );
-  
+
   if (values[3].length != 0) {
     if (values[3].length > 1) {
       flashLoanAmounts.push(values[1]);
@@ -1399,249 +1400,706 @@ function reduceAmount(amount) {
   return reduced;
 }
 
-// Helper function to test swap amount calculations with precision
-export function testSwapAmountCalculationPrecise() {
-  console.log("=== Testing Swap Amount Calculation with Full Precision ===");
+export async function getSwapAmountsForInputExternalPositionRebalance(
+  sellPosition,
+  sellAmount,
+  amountCalculationsAddress,
+  ensoHandlerAddress,
+  shouldSwap,
+  buyTokens
+) {
+  let sellTokens = [];
+  let swapAmounts = [];
+  let callData = [];
 
-  // Example 1: Buy token0 (swap token1 for token0)
-  // Current: 50/50, Desired: 70/30
-  console.log("\n--- Example 1: Buy token0 ---");
-  const feeAmount0USD_1 = BigNumber.from("500000000000000000000"); // 500 token0
-  const feeAmount1USD_1 = BigNumber.from("500000000000000000000"); // 500 token1
-  const desiredAmount0USD_1 = BigNumber.from("700000000000000000000"); // 700 token0
-  const desiredAmount1USD_1 = BigNumber.from("300000000000000000000"); // 300 token1
 
-  const result1 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_1,
-    feeAmount1USD_1,
-    desiredAmount0USD_1,
-    desiredAmount1USD_1,
-    "0x0000000000000000000000000000000000000001", // token0
-    "0x0000000000000000000000000000000000000002" // token1
+  const positionWrapper = new ethers.Contract(
+    sellPosition,
+    POSITION_WRAPPER_ABI,
+    provider
   );
 
-  console.log("Current: 500 token0, 500 token1 (50/50)");
-  console.log("Desired: 700 token0, 300 token1 (70/30)");
-  console.log("Action: Buy token0 (swap token1 for token0)");
-  console.log("Swap Amount:", result1.swapAmount.toString());
-  console.log("Token In:", result1.tokenIn);
-  console.log("Token Out:", result1.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result1.expectedRatioAfterSwap.token0Percent}% token0, ${result1.expectedRatioAfterSwap.token1Percent}% token1`
+  const token0 = await positionWrapper.token0();
+  const token1 = await positionWrapper.token1();
+
+  // get withdraw amounts
+  // get underlying amounts of position
+
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
+  );
+  let percentage = await amountCalculationsAlgebra.getPercentage(
+    sellAmount,
+    (await positionWrapper.totalSupply()).toString()
   );
 
-  // Example 2: Buy token1 (swap token0 for token1)
-  // Current: 70/30, Desired: 30/70
-  console.log("\n--- Example 2: Buy token1 ---");
-  const feeAmount0USD_2 = BigNumber.from("700000000000000000000"); // 700 token0
-  const feeAmount1USD_2 = BigNumber.from("300000000000000000000"); // 300 token1
-  const desiredAmount0USD_2 = BigNumber.from("300000000000000000000"); // 300 token0
-  const desiredAmount1USD_2 = BigNumber.from("700000000000000000000"); // 700 token1
-
-  const result2 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_2,
-    feeAmount1USD_2,
-    desiredAmount0USD_2,
-    desiredAmount1USD_2,
-    "0x0000000000000000000000000000000000000001", // token0
-    "0x0000000000000000000000000000000000000002" // token1
+  let withdrawAmounts = await calculateOutputAmounts(
+    sellPosition,
+    amountCalculationsAddress,
+    percentage
   );
 
-  console.log("Current: 700 token0, 300 token1 (70/30)");
-  console.log("Desired: 300 token0, 700 token1 (30/70)");
-  console.log("Action: Buy token1 (swap token0 for token1)");
-  console.log("Swap Amount:", result2.swapAmount.toString());
-  console.log("Token In:", result2.tokenIn);
-  console.log("Token Out:", result2.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result2.expectedRatioAfterSwap.token0Percent}% token0, ${result2.expectedRatioAfterSwap.token1Percent}% token1`
+  if (withdrawAmounts.token0Amount > 0) {
+    swapAmounts.push(BigNumber.from(withdrawAmounts.token0Amount));
+    sellTokens.push(token0);
+  }
+
+  if (withdrawAmounts.token1Amount > 0) {
+    swapAmounts.push(BigNumber.from(withdrawAmounts.token1Amount));
+    sellTokens.push(token1);
+  }
+
+  let sellTokensFinal = [];
+  if (shouldSwap) {
+    // create call data for swap
+    for (let i = 0; i < sellTokens.length; i++) {
+      if (sellTokens[i] != buyTokens[i] && swapAmounts[i].gt(0)) {
+        let response = await createEnsoCallDataRoute(
+          ensoHandlerAddress,
+          ensoHandlerAddress,
+          sellTokens[i],
+          buyTokens[i],
+          swapAmounts[i].toString()
+        );
+        callData.push(response.data.tx.data);
+
+        sellTokensFinal.push(sellTokens[i]);
+      }
+    }
+  }
+
+  return { sellTokensFinal, swapAmounts, callData };
+}
+
+export async function getSwapAmountsForOutputExternalPositionRebalance(
+  sellTokens,
+  ensoHandlerAddress,
+  buyPosition,
+  swapAmount,
+  shouldSwap,
+  amountCalculationsAddress
+) {
+  const positionWrapper = new ethers.Contract(
+    buyPosition,
+    POSITION_WRAPPER_ABI,
+    provider
   );
 
-  // Example 3: Small precision test
-  console.log("\n--- Example 3: Small Precision Test ---");
-  const feeAmount0USD_3 = BigNumber.from("749294974000000000000"); // 749.294974 token0
-  const feeAmount1USD_3 = BigNumber.from("250705026000000000000"); // 250.705026 token1
-  const desiredAmount0USD_3 = BigNumber.from("750000000000000000000"); // 750 token0
-  const desiredAmount1USD_3 = BigNumber.from("250000000000000000000"); // 250 token1
+  const token0 = await positionWrapper.token0();
+  const token1 = await positionWrapper.token1();
 
-  const result3 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_3,
-    feeAmount1USD_3,
-    desiredAmount0USD_3,
-    desiredAmount1USD_3,
-    "0x0000000000000000000000000000000000000001", // token0
-    "0x0000000000000000000000000000000000000002" // token1
-  );
+  let buyTokens = [];
+  let swapAmounts = [];
+  let callData = [];
 
-  console.log("Current: 749.294974 token0, 250.705026 token1");
-  console.log("Desired: 750 token0, 250 token1");
-  console.log(
-    "Action:",
-    result3.swapAmount.gt(0) ? "Small adjustment" : "No swap needed"
-  );
-  console.log("Swap Amount:", result3.swapAmount.toString());
-  console.log("Token In:", result3.tokenIn);
-  console.log("Token Out:", result3.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result3.expectedRatioAfterSwap.token0Percent}% token0, ${result3.expectedRatioAfterSwap.token1Percent}% token1`
+  let depositAmounts = await calculateDepositAmounts(
+    buyPosition,
+    await positionWrapper.initialTickLower(),
+    await positionWrapper.initialTickUpper(),
+    swapAmount,
+    amountCalculationsAddress
   );
 
-  // Example 4: Very small values
-  console.log("\n--- Example 4: Very Small Values ---");
-  const feeAmount0USD_4 = BigNumber.from("1000000000000000000"); // 1 token0
-  const feeAmount1USD_4 = BigNumber.from("1000000000000000000"); // 1 token1
-  const desiredAmount0USD_4 = BigNumber.from("1500000000000000000"); // 1.5 token0
-  const desiredAmount1USD_4 = BigNumber.from("500000000000000000"); // 0.5 token1
+  console.log("depositAmounts", depositAmounts);
+  console.log("token0", token0);
+  console.log("token1", token1);
 
-  const result4 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_4,
-    feeAmount1USD_4,
-    desiredAmount0USD_4,
-    desiredAmount1USD_4,
-    "0x0000000000000000000000000000000000000001", // token0
-    "0x0000000000000000000000000000000000000002" // token1
-  );
+  // Always ensure we have amounts for both token0 and token1
+  // If we don't swap for a token, its amount will be 0
+  const sellToken = sellTokens[0];
 
-  console.log("Current: 1 token0, 1 token1 (50/50)");
-  console.log("Desired: 1.5 token0, 0.5 token1 (75/25)");
-  console.log("Action: Buy token0 (swap token1 for token0)");
-  console.log("Swap Amount:", result4.swapAmount.toString());
-  console.log("Token In:", result4.tokenIn);
-  console.log("Token Out:", result4.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result4.expectedRatioAfterSwap.token0Percent}% token0, ${result4.expectedRatioAfterSwap.token1Percent}% token1`
-  );
+  // Initialize amounts for both tokens
+  let amount0ForSwap = BigNumber.from(0);
+  let amount1ForSwap = BigNumber.from(0);
 
-  // Example 5: Real fee values
-  console.log("\n--- Example 5: Real Fee Values ---");
-  const feeAmount0USD_5 = BigNumber.from("732079299086489"); // Real fee token0
-  const feeAmount1USD_5 = BigNumber.from("3653728309484992"); // Real fee token1
-  const desiredAmount0USD_5 = BigNumber.from("1000000000000000000"); // 1 token0 (desired)
-  const desiredAmount1USD_5 = BigNumber.from("1000000000000000000"); // 1 token1 (desired)
+  let amountsOut = [];
 
-  const result5 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_5,
-    feeAmount1USD_5,
-    desiredAmount0USD_5,
-    desiredAmount1USD_5,
-    "0x0000000000000000000000000000000000000001", // token0
-    "0x0000000000000000000000000000000000000002" // token1
-  );
 
-  console.log("Current: 732079299086489 token0, 3653728309484992 token1");
-  console.log(
-    "Desired: 1000000000000000000 token0, 1000000000000000000 token1"
-  );
-  console.log(
-    "Action:",
-    result5.swapAmount.gt(0) ? "Real fee adjustment" : "No swap needed"
-  );
-  console.log("Swap Amount:", result5.swapAmount.toString());
-  console.log("Token In:", result5.tokenIn);
-  console.log("Token Out:", result5.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result5.expectedRatioAfterSwap.token0Percent}% token0, ${result5.expectedRatioAfterSwap.token1Percent}% token1`
-  );
+  if (token0 !== sellToken && depositAmounts.amount0 > 0) {
+    amount0ForSwap = BigNumber.from(depositAmounts.amount0);
+    swapAmounts.push(amount0ForSwap);
+    buyTokens.push(token0);
+  } else if (token0 === sellToken && depositAmounts.amount0 > 0) {
+    amountsOut[0] = depositAmounts.amount0;
+  } else {
+    amountsOut[0] = "0";
+  }
+  if (token1 !== sellToken && depositAmounts.amount1 > 0) {
+    amount1ForSwap = BigNumber.from(depositAmounts.amount1);
+    swapAmounts.push(amount1ForSwap);
+    buyTokens.push(token1);
+  } else if (token1 === sellToken && depositAmounts.amount1 > 0) {
+    amountsOut[1] = depositAmounts.amount1;
+  } else {
+    amountsOut[1] = "0";
+  }
 
-  // Example 6: Micro amounts
-  console.log("\n--- Example 6: Micro Amounts ---");
-  const feeAmount0USD_6 = BigNumber.from("1000000000000000"); // 0.001 token0
-  const feeAmount1USD_6 = BigNumber.from("9000000000000000"); // 0.009 token1
-  const desiredAmount0USD_6 = BigNumber.from("5000000000000000"); // 0.005 token0
-  const desiredAmount1USD_6 = BigNumber.from("5000000000000000"); // 0.005 token1
+  console.log("swapAmounts", swapAmounts);
+  console.log("buyTokens", buyTokens);
 
-  const result6 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_6,
-    feeAmount1USD_6,
-    desiredAmount0USD_6,
-    desiredAmount1USD_6,
-    "0x0000000000000000000000000000000000000001", // token0
-    "0x0000000000000000000000000000000000000002" // token1
-  );
+  // Always add both tokens to buyTokensFinal with their amounts (0 if not swapped)
+  let buyTokensFinal = [];
 
-  console.log("Current: 0.001 token0, 0.009 token1 (10/90)");
-  console.log("Desired: 0.005 token0, 0.005 token1 (50/50)");
-  console.log(
-    "Action:",
-    result6.swapAmount.gt(0) ? "Micro adjustment" : "No swap needed"
-  );
-  console.log("Swap Amount:", result6.swapAmount.toString());
-  console.log("Token In:", result6.tokenIn);
-  console.log("Token Out:", result6.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result6.expectedRatioAfterSwap.token0Percent}% token0, ${result6.expectedRatioAfterSwap.token1Percent}% token1`
-  );
+  buyTokensFinal.push(token0);
+  buyTokensFinal.push(token1);
 
-  // Example 7: Real values from user
-  console.log("\n--- Example 7: Real User Values ---");
-  const feeAmount0USD_7 = BigNumber.from("875189502145937"); // Real fee token0 (ETH)
-  const feeAmount1USD_7 = BigNumber.from("4129712983430202"); // Real fee token1 (WBNB)
-  const desiredAmount0USD_7 = BigNumber.from("1000000000000000000"); // 1 token0 (desired)
-  const desiredAmount1USD_7 = BigNumber.from("1000000000000000000"); // 1 token1 (desired)
+  // Create amountsOut array with amounts for both tokens
+  // amountsOut.push(reduceAmount(BigNumber.from(depositAmounts.amount0)));
+  // amountsOut.push(reduceAmount(BigNumber.from(depositAmounts.amount1)));
 
-  const result7 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_7,
-    feeAmount1USD_7,
-    desiredAmount0USD_7,
-    desiredAmount1USD_7,
-    "0x2170Ed0880ac9A755fd29B2688956BD959F933F8", // ETH token0
-    "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" // WBNB token1
+  console.log("amountsOut after reduceAmount", amountsOut);
+
+  // Create call data for swaps
+  if (shouldSwap) {
+    const sellToken = sellTokens[0];
+    for (let i = 0; i < buyTokens.length; i++) {
+      if (sellToken != buyTokens[i] && swapAmounts[i].gt(0)) {
+        console.log("sellToken", sellToken);
+        console.log("buyTokens[i]", buyTokens[i]);
+        console.log("swapAmounts[i]", swapAmounts[i]);
+        console.log("i", i)
+        console.log("how many times is this called?")
+        // We need to swap proportional amounts for each token
+        const proportionalAmount = swapAmounts[i];
+
+        let response = await createEnsoCallDataRoute(
+          ensoHandlerAddress,
+          ensoHandlerAddress,
+          sellToken,
+          buyTokens[i],
+          swapAmounts[i].toString()
+        );
+        callData.push(response.data.tx.data);
+
+
+        // Use the original calculated amount instead of Enso's inflated amountOut
+
+        if (token0 === buyTokens[i]) {
+          amountsOut[0] = response.data.amountOut;
+        } else {
+          amountsOut[1] = response.data.amountOut;
+        }
+      }
+    }
+  }
+
+  return { buyTokensFinal, swapAmounts, callData, amountsOut };
+}
+
+export async function calculateDepositAmounts(
+  position,
+  newTickLower,
+  newTickUpper,
+  inputAmount,
+  amountCalculationsAddress
+) {
+  // Use existing deployed contract instead of deploying new one
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
   );
 
-  console.log("Current: 875189502145937 ETH, 4129712983430202 WBNB");
-  console.log("Desired: 1000000000000000000 ETH, 1000000000000000000 WBNB");
-  console.log(
-    "Action:",
-    result7.swapAmount.gt(0) ? "Real user fee adjustment" : "No swap needed"
-  );
-  console.log("Swap Amount:", result7.swapAmount.toString());
-  console.log("Token In:", result7.tokenIn);
-  console.log("Token Out:", result7.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result7.expectedRatioAfterSwap.token0Percent}% token0, ${result7.expectedRatioAfterSwap.token1Percent}% token1`
+  console.log("newTickLower", newTickLower);
+  console.log("newTickUpper", newTickUpper);
+  console.log("inputAmount", inputAmount);
+  console.log("amountCalculationsAddress", amountCalculationsAddress);
+  console.log("position", position);
+
+  // Get amounts for new price range (to calculate the ratio)
+  let amounts =
+    await amountCalculationsAlgebra.callStatic.getRatioAmountsForTicks(
+      position,
+      newTickLower,
+      newTickUpper
+    );
+
+  console.log("amounts", amounts);
+
+  // Use BigNumber arithmetic to maintain precision
+  const amount0BN = BigNumber.from(amounts.amount0.toString());
+  const amount1BN = BigNumber.from(amounts.amount1.toString());
+  console.log("amount0BN", amount0BN);
+  console.log("amount1BN", amount1BN);
+  const totalAmount = amount0BN.add(amount1BN);
+  const inputAmountBN = BigNumber.from(inputAmount.toString());
+
+  // Handle edge case where total is zero - get current ratio from position
+  if (totalAmount.eq(0)) {
+    // Get the current ratio from the position itself
+    const amountCalculationsAlgebraForRatio = new ethers.Contract(
+      amountCalculationsAddress,
+      AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+      provider
+    );
+
+    try {
+      // Get current amounts in the position to determine ratio
+      const currentAmounts =
+        await amountCalculationsAlgebraForRatio.callStatic.getLiquidityAmountsForPartialWithdrawal(
+          position,
+          "10000" // 100% to get the full ratio
+        );
+
+      const currentAmount0 = BigNumber.from(currentAmounts.amount0Out || 0);
+      const currentAmount1 = BigNumber.from(currentAmounts.amount1Out || 0);
+      const currentTotal = currentAmount0.add(currentAmount1);
+
+      if (currentTotal.gt(0)) {
+        // Use the current position ratio
+        const amount0 = inputAmountBN.mul(currentAmount0).div(currentTotal);
+        const amount1 = inputAmountBN.mul(currentAmount1).div(currentTotal);
+        return { amount0: amount0.toString(), amount1: amount1.toString() };
+      }
+    } catch (error) {
+      console.log(
+        "Could not get current position ratio, falling back to equal split"
+      );
+    }
+
+    // Final fallback: split equally
+    const halfAmount = inputAmountBN.div(2);
+    return { amount0: halfAmount.toString(), amount1: halfAmount.toString() };
+  }
+
+  // Calculate amounts using BigNumber arithmetic to maintain precision
+  const amount0 = inputAmountBN.mul(amount0BN).div(totalAmount);
+  const amount1 = inputAmountBN.sub(amount0); // Ensure total equals inputAmount
+
+  return { amount0: amount0.toString(), amount1: amount1.toString() };
+}
+
+export async function createEncodedParametersIncreaseLiquidity(
+  position,
+  sellTokens,
+  sellTokenBalances,
+  ensoHandlerAddress,
+  amountCalculationsAddress,
+  dustReceiver,
+  priceOracleAddress,
+  shouldSwap
+) {
+  const positionWrapper = new ethers.Contract(
+    position,
+    POSITION_WRAPPER_ABI,
+    provider
   );
 
-  // Example 8: Real values from user targeting 10% ratio
-  console.log("\n--- Example 8: Real User Values (10% Target) ---");
-  const feeAmount0USD_8 = BigNumber.from("875189502145937"); // Real fee token0 (ETH)
-  const feeAmount1USD_8 = BigNumber.from("4129712983430202"); // Real fee token1 (WBNB)
-  const desiredAmount0USD_8 = BigNumber.from("200000000000000000"); // 0.2 token0 (desired for 10%)
-  const desiredAmount1USD_8 = BigNumber.from("1800000000000000000"); // 1.8 token1 (desired for 90%)
+  const token1 = await positionWrapper.token0();
+  const token0 = await positionWrapper.token1();
 
-  const result8 = getSwapInfoToDesiredRatioBN(
-    feeAmount0USD_8,
-    feeAmount1USD_8,
-    desiredAmount0USD_8,
-    desiredAmount1USD_8,
-    "0x2170Ed0880ac9A755fd29B2688956BD959F933F8", // ETH token0
-    "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c" // WBNB token1
+  const positionManagerAddress = await positionWrapper.parentPositionManager();
+  console.log("sellTokens", sellTokens);
+  console.log("sellTokenBalances", sellTokenBalances);
+  const { buyTokensFinal, swapAmounts, callData, amountsOut } =
+    await getSwapAmountsForOutputExternalPositionRebalance(
+      sellTokens,
+      ensoHandlerAddress,
+      position,
+      sellTokenBalances,
+      shouldSwap, // can be false if no swap is needed (keep underlying tokens)
+      amountCalculationsAddress
+    );
+
+  // We can have 1 or 2 swap amounts depending on how many different tokens we're swapping to
+  // if (swapAmounts.length === 0) {
+  //   throw new Error(`No swap amounts calculated`);
+  // }
+
+
+  // Map amountsOut from Enso swaps back to token0 and token1 amounts
+  let amount0FromSwap = BigNumber.from(0);
+  let amount1FromSwap = BigNumber.from(0);
+
+  for (let i = 0; i < buyTokensFinal.length; i++) {
+    if (buyTokensFinal[i] === token0) {
+      amount0FromSwap = BigNumber.from(amountsOut[i]);
+    } else if (buyTokensFinal[i] === token1) {
+      amount1FromSwap = BigNumber.from(amountsOut[i]);
+    }
+  }
+
+  // Apply reduceAmount to account for slippage and ensure transaction success
+  const amount0ForDeposit = reduceAmount(amount0FromSwap);
+  const amount1ForDeposit = reduceAmount(amount1FromSwap);
+
+  console.log('amountsOut', amountsOut);
+
+  const increaseLiquidityAmount0 = reduceAmount(BigNumber.from(amountsOut[0]));
+  const increaseLiquidityAmount1 = reduceAmount(BigNumber.from(amountsOut[1]));
+
+
+
+  console.log("increaseLiquidityAmount0", increaseLiquidityAmount0);
+  console.log("increaseLiquidityAmount1", increaseLiquidityAmount1);
+
+  const callDataIncreaseLiquidity = [[]];
+  const increaseLiquidityTarget = [[]]
+  // Encode the function call
+  let ABIApprove = ["function approve(address spender, uint256 amount)"];
+  let abiEncodeApprove = new ethers.utils.Interface(ABIApprove);
+
+  let approvalIndex = 0;
+
+  // Only approve token0 if amount > 0 (use reduced amounts for consistency)
+  if (amount0ForDeposit.gt(0)) {
+    callDataIncreaseLiquidity[0][approvalIndex] =
+      abiEncodeApprove.encodeFunctionData("approve", [
+        positionManagerAddress,
+        amount0ForDeposit.toString(),
+      ]);
+    increaseLiquidityTarget[0].push(token0);
+    approvalIndex++;
+  }
+
+  // Only approve token1 if amount > 0 (use reduced amounts for consistency)
+  if (amount1ForDeposit.gt(0)) {
+    callDataIncreaseLiquidity[0][approvalIndex] =
+      abiEncodeApprove.encodeFunctionData("approve", [
+        positionManagerAddress,
+        amount1ForDeposit.toString(),
+      ]);
+    increaseLiquidityTarget[0].push(token1);
+    approvalIndex++;
+  }
+
+  // Check if this is the first deposit by checking position totalSupply
+  const totalSupply = await positionWrapper.totalSupply();
+  const isFirstDeposit = totalSupply.eq(0);
+
+  // Set minimum amounts to 0 for now (proper slippage calculation would require token prices)
+  const amount0Min = BigNumber.from(0);
+  const amount1Min = BigNumber.from(0);
+
+  let ABI = [];
+  let functionName = "";
+  let functionParams = [];
+
+  if (isFirstDeposit) {
+    console.log("isFirstDeposit", isFirstDeposit);
+    // First deposit - use initializePositionAndDeposit
+    ABI = [
+      "function initializePositionAndDeposit(address _dustReceiver, address _positionWrapper, (uint256 _amount0Desired, uint256 _amount1Desired, uint256 _amount0Min, uint256 _amount1Min, address _deployer) params)",
+    ];
+
+    functionName = "initializePositionAndDeposit";
+    functionParams = [
+      dustReceiver, // _dustReceiver
+      position, // _positionWrapper
+      {
+        // Use reduced amounts for consistency with approvals
+        _amount0Desired: increaseLiquidityAmount0,
+        _amount1Desired: increaseLiquidityAmount1,
+        _amount0Min: amount0Min.toString(),
+        _amount1Min: amount1Min.toString(),
+        _deployer: ethers.constants.AddressZero,
+      },
+    ];
+  } else {
+    // Subsequent deposit - use increaseLiquidity
+    // Get reinvestment swap info for existing position
+    const reinvestmentSwapInfo = await getReinvestmentSwapInfo(
+      position,
+      priceOracleAddress,
+      amountCalculationsAddress
+    );
+
+    ABI = [
+      "function increaseLiquidity((address _dustReceiver, address _positionWrapper, uint256 _amount0Desired, uint256 _amount1Desired, uint256 _amount0Min, uint256 _amount1Min, address _swapDeployer, address _tokenIn, address _tokenOut, uint256 _amountIn, uint24 _fee) _params)",
+    ];
+
+    functionName = "increaseLiquidity";
+    functionParams = [
+      {
+        _dustReceiver: dustReceiver,
+        _positionWrapper: position,
+        // Use reduced amounts for consistency with approvals
+        _amount0Desired: increaseLiquidityAmount0,
+        _amount1Desired: increaseLiquidityAmount1,
+        _amount0Min: amount0Min.toString(),
+        _amount1Min: amount1Min.toString(),
+        _swapDeployer: ethers.constants.AddressZero,
+        // Use reinvestment swap info for existing position
+        _tokenIn: reinvestmentSwapInfo.tokenIn,
+        _tokenOut: reinvestmentSwapInfo.tokenOut,
+        _amountIn: reinvestmentSwapInfo.swapAmount.toString(),
+        _fee: 0,
+      },
+    ];
+  }
+
+  let abiEncode = new ethers.utils.Interface(ABI);
+
+  // Encode the function call at the next index after approvals
+  callDataIncreaseLiquidity[0][approvalIndex] = abiEncode.encodeFunctionData(
+    functionName,
+    functionParams
+  );
+  console.log("positionManagerAddress", positionManagerAddress);
+  increaseLiquidityTarget[0].push(positionManagerAddress);
+
+
+  const encodedParameters = ethers.utils.defaultAbiCoder.encode(
+    [
+      "bytes[][]", // callDataEnso
+      "bytes[]", // callDataDecreaseLiquidity
+      "bytes[][]", // callDataIncreaseLiquidity
+      "address[][]", // increaseLiquidityTarget
+      "address[]", // underlyingTokensDecreaseLiquidity
+      "address[][]", // tokensIn
+      "address[][]", // tokensOut
+      "uint256[][]", // minExpectedOutputAmounts (out)
+    ],
+    [
+      [callData],
+      [],
+      callDataIncreaseLiquidity,
+      increaseLiquidityTarget,
+      [],
+      [sellTokens],
+      [[position]],
+      [[0]],
+    ]
   );
 
-  console.log("Current: 875189502145937 ETH, 4129712983430202 WBNB");
-  console.log(
-    "Desired: 200000000000000000 ETH, 1800000000000000000 WBNB (10/90)"
-  );
-  console.log(
-    "Action:",
-    result8.swapAmount.gt(0)
-      ? "Real user fee adjustment to 10%"
-      : "No swap needed"
-  );
-  console.log("Swap Amount:", result8.swapAmount.toString());
-  console.log("Token In:", result8.tokenIn);
-  console.log("Token Out:", result8.tokenOut);
-  console.log(
-    `Expected ratio after swap: ${result8.expectedRatioAfterSwap.token0Percent}% token0, ${result8.expectedRatioAfterSwap.token1Percent}% token1`
+  return encodedParameters;
+}
+
+export async function createEncodedParametersDecreaseLiquidity(
+  sellPosition,
+  sellTokenBalance,
+  ensoHandlerAddress,
+  amountCalculationsAddress,
+  dustReceiver,
+  priceOracleAddress
+) {
+  const positionWrapper = new ethers.Contract(
+    sellPosition,
+    POSITION_WRAPPER_ABI,
+    provider
   );
 
-  return {
-    result1,
-    result2,
-    result3,
-    result4,
-    result5,
-    result6,
-    result7,
-    result8,
-  };
+  const token0 = await positionWrapper.token0();
+  const token1 = await positionWrapper.token1();
+
+  // Calculate percentage of position being sold
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
+  );
+
+  let percentage = await amountCalculationsAlgebra.getPercentage(
+    sellTokenBalance,
+    (await positionWrapper.totalSupply()).toString()
+  );
+
+  // Calculate underlying token amounts that will be withdrawn
+  let withdrawAmounts = await calculateOutputAmounts(
+    sellPosition,
+    amountCalculationsAddress,
+    percentage.toString()
+  );
+
+  // Check if we're withdrawing less than total supply (need reinvestment swap info)
+  const totalSupply = await positionWrapper.totalSupply();
+  const isPartialWithdrawal = BigNumber.from(sellTokenBalance).lt(totalSupply);
+
+  let tokenIn = ethers.constants.AddressZero;
+  let tokenOut = ethers.constants.AddressZero;
+  let amountIn = BigNumber.from(0);
+
+  if (isPartialWithdrawal) {
+    // Get reinvestment swap info for partial withdrawal
+    const reinvestmentSwapInfo = await getReinvestmentSwapInfo(
+      sellPosition,
+      priceOracleAddress,
+      amountCalculationsAddress
+    );
+
+    tokenIn = reinvestmentSwapInfo.tokenIn;
+    tokenOut = reinvestmentSwapInfo.tokenOut;
+    amountIn = reinvestmentSwapInfo.swapAmount;
+  }
+
+  // Create decrease liquidity call data
+  const callDataDecreaseLiquidity = [];
+  let ABI = [
+    "function decreaseLiquidity(address _positionWrapper, uint256 _withdrawalAmount, uint256 _amount0Min, uint256 _amount1Min, address _swapDeployer, address tokenIn, address tokenOut, uint256 amountIn, uint24 _fee)",
+  ];
+  let abiEncode = new ethers.utils.Interface(ABI);
+
+  callDataDecreaseLiquidity[0] = abiEncode.encodeFunctionData(
+    "decreaseLiquidity",
+    [
+      sellPosition,
+      sellTokenBalance,
+      0, // _amount0Min
+      0, // _amount1Min
+      ethers.constants.AddressZero, // _swapDeployer
+      tokenIn,
+      tokenOut,
+      amountIn.toString(),
+      100, // _fee
+    ]
+  );
+
+  // Prepare underlying tokens array
+  const underlyingTokens = [];
+  if (withdrawAmounts.token0Amount.gt(0)) {
+    underlyingTokens.push(token0);
+  }
+  if (withdrawAmounts.token1Amount.gt(0)) {
+    underlyingTokens.push(token1);
+  }
+
+  const encodedParameters = ethers.utils.defaultAbiCoder.encode(
+    [
+      "bytes[][]", // callDataEnso
+      "bytes[]", // callDataDecreaseLiquidity
+      "bytes[][]", // callDataIncreaseLiquidity
+      "address[][]", // increaseLiquidityTarget
+      "address[]", // underlyingTokensDecreaseLiquidity
+      "address[][]", // tokensIn
+      "address[][]", // tokensOut
+      "uint256[][]", // minExpectedOutputAmounts (out)
+    ],
+    [
+      [[]], // Empty callDataEnso (no swaps needed for this basic case)
+      callDataDecreaseLiquidity,
+      [[]], // Empty callDataIncreaseLiquidity
+      [[]], // Empty increaseLiquidityTarget
+      underlyingTokens, // Underlying tokens from the position
+      [[sellPosition]], // tokensIn - the position being sold
+      [underlyingTokens], // tokensOut - underlying tokens being received
+      [[0, 0]], // minExpectedOutputAmounts
+    ]
+  );
+
+  return encodedParameters;
+}
+
+export async function createEncodedParametersDecreaseLiquidityWithSwap(
+  sellPosition,
+  sellTokenBalance,
+  buyToken,
+  ensoHandlerAddress,
+  amountCalculationsAddress,
+  dustReceiver
+) {
+  const positionWrapper = new ethers.Contract(
+    sellPosition,
+    POSITION_WRAPPER_ABI,
+    provider
+  );
+
+  const token0 = await positionWrapper.token0();
+  const token1 = await positionWrapper.token1();
+
+  // Calculate percentage of position being sold
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
+  );
+
+  let percentage = await amountCalculationsAlgebra.getPercentage(
+    sellTokenBalance,
+    (await positionWrapper.totalSupply()).toString()
+  );
+
+  // Calculate underlying token amounts that will be withdrawn
+  let withdrawAmounts = await calculateOutputAmounts(
+    sellPosition,
+    amountCalculationsAddress,
+    percentage.toString()
+  );
+
+  // Prepare swap data for underlying tokens to target token
+  let callDataEnso = [[]];
+
+  if(withdrawAmounts.token0Amount.gt(0) && token0 !== buyToken) {
+
+    console.log("token0", token0);
+    let swapAmount = withdrawAmounts.token0Amount.toString();
+    const response0 = await createEnsoCallDataRoute(
+      ensoHandlerAddress,
+      ensoHandlerAddress,
+      token0,
+      buyToken,
+      swapAmount
+    );
+    callDataEnso[0].push(response0.data.tx.data);
+  }
+
+  if (withdrawAmounts.token1Amount.gt(0) && token1 !== buyToken) {
+    console.log("token1", token1);
+    let swapAmount = withdrawAmounts.token1Amount.toString();
+    const response1 = await createEnsoCallDataRoute(
+      ensoHandlerAddress,
+      ensoHandlerAddress,
+      token1,
+      buyToken,
+      swapAmount
+    );
+    callDataEnso[0].push(response1.data.tx.data);
+  }
+
+  // Create decrease liquidity call data
+  const callDataDecreaseLiquidity = [];
+  let ABI = [
+    "function decreaseLiquidity(address _positionWrapper, uint256 _withdrawalAmount, uint256 _amount0Min, uint256 _amount1Min, address _swapDeployer, address tokenIn, address tokenOut, uint256 amountIn, uint24 _fee)",
+  ];
+  let abiEncode = new ethers.utils.Interface(ABI);
+
+  callDataDecreaseLiquidity[0] = abiEncode.encodeFunctionData(
+    "decreaseLiquidity",
+    [
+      sellPosition,
+      sellTokenBalance,
+      0, // _amount0Min
+      0, // _amount1Min
+      ethers.constants.AddressZero, // _swapDeployer
+      token0, // tokenIn
+      token1, // tokenOut
+      0, // amountIn
+      100, // _fee
+    ]
+  );
+
+  // Prepare underlying tokens array
+  const underlyingTokens = [];
+  if (withdrawAmounts.token0Amount.gt(0)) {
+    underlyingTokens.push(token0);
+  }
+  if (withdrawAmounts.token1Amount.gt(0)) {
+    underlyingTokens.push(token1);
+  }
+
+  const encodedParameters = ethers.utils.defaultAbiCoder.encode(
+    [
+      "bytes[][]", // callDataEnso
+      "bytes[]", // callDataDecreaseLiquidity
+      "bytes[][]", // callDataIncreaseLiquidity
+      "address[][]", // increaseLiquidityTarget
+      "address[]", // underlyingTokensDecreaseLiquidity
+      "address[][]", // tokensIn
+      "address[][]", // tokensOut
+      "uint256[][]", // minExpectedOutputAmounts (out)
+    ],
+    [
+      callDataEnso,
+      callDataDecreaseLiquidity,
+      [[]], // Empty callDataIncreaseLiquidity
+      [[]], // Empty increaseLiquidityTarget
+      underlyingTokens, // Underlying tokens from the position
+      [[sellPosition]], // tokensIn - the position being sold
+      [[buyToken]], // tokensOut - underlying tokens being received
+      [[0]], // minExpectedOutputAmounts
+    ]
+  );
+
+  return encodedParameters;
 }
