@@ -8,6 +8,7 @@ import WithdrawWBNB from './WithdrawWBNB';
 import InitToken from './InitToken';
 import Borrow from './Borrow';
 import PortfolioTokens from './PortfolioTokens';
+import UpdateWeight from './UpdateWeight';
 import './CreatePortfolio.css';
 
 const LM5Portfolio = "0x77b3bFaC49ab8a15200038DBFb9dd9A287371E6C";
@@ -26,7 +27,7 @@ const CreatePortfolio = () => {
     assetManagementConfig: "0x0000000000000000000000000000000000000000", // You may need to get this from the contract
     positionList: [],
     positionIndex: 0,
-    rebalancing: "0xcc55661e8df21c02782e0ce4fe2944a8b1982509"
+    rebalancing: "0xcc55661e8df21c02782e0ce4fe2944a8b1982509",
   };
 
   const copyToClipboard = async () => {
@@ -60,14 +61,15 @@ const CreatePortfolio = () => {
           </div>
           
           <div className="portfolio-actions">
-            {/* <CreatePosition portfolioAddress={portfolio.portfolioAddress} /> */}
+            <CreatePosition portfolioAddress={portfolio.portfolioAddress} />
             {/* <InitToken portfolioAddress={portfolio.portfolioAddress} />
             <WBNBApproval portfolio={portfolio} /> */}
             <PortfolioTokens portfolio={portfolio} />
             <DepositWBNB portfolio={portfolio} />
-            {/* <RebalancePortfolio portfolio={portfolio} /> */}
+            <RebalancePortfolio portfolio={portfolio} />
             <WithdrawWBNB portfolio={portfolio} />
-            {/* <Borrow portfolio={portfolio} /> */}
+            <UpdateWeight portfolio={portfolio} />
+            <Borrow portfolio={portfolio} />
           </div>
         </div>
       )}
