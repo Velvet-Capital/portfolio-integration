@@ -7,7 +7,7 @@ import RebalancePortfolio from './RebalancePortfolio';
 import WithdrawWBNB from './WithdrawWBNB';
 import InitToken from './InitToken';
 import Borrow from './Borrow';
-import PortfolioTokens from './PortfolioTokens';
+import PortfolioInvestment from './PortfolioInvestment';
 import UpdateWeight from './UpdateWeight';
 import './CreatePortfolio.css';
 
@@ -62,9 +62,9 @@ const CreatePortfolio = () => {
           
           <div className="portfolio-actions">
             <CreatePosition portfolioAddress={portfolio.portfolioAddress} />
-            {/* <InitToken portfolioAddress={portfolio.portfolioAddress} />
-            <WBNBApproval portfolio={portfolio} /> */}
-            <PortfolioTokens portfolio={portfolio} />
+            <InitToken portfolioAddress={portfolio.portfolioAddress} />
+            <WBNBApproval portfolio={portfolio} /> 
+            <PortfolioInvestment portfolio={portfolio} />
             <DepositWBNB portfolio={portfolio} />
             <RebalancePortfolio portfolio={portfolio} />
             <WithdrawWBNB portfolio={portfolio} />
