@@ -6881,7 +6881,7 @@ export const DEPOSIT_BATCH_ABI = [
   }
 ]
 
-export const depositBatchAddress = "0x35850ffadf4a862aFc1fA1E24daB3A778204F94D"
+export const depositBatchAddress = "0x8fFe87dA29a1A9DfF64Bf1BCB3abaa2137205699"
 
 export const priceOracleAddress = "0x139Dd769394FF8eDE4A0aC927a58cC9fe80Ca4E2"
 
@@ -10233,6 +10233,157 @@ export const VENUS_TOKEN_ABI = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  }
+]
+
+export const depositManagerAddress = "0x7713e006D0476770fa90e5bdBeDaF28CFce1C57c";
+
+export const DEPOSIT_MANAGER_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_depositBatch",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "DEPOSIT_BATCH",
+    "outputs": [
+      {
+        "internalType": "contract IDepositBatchExternalPositions",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "_minMintAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_depositAmount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_target",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_depositToken",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes[]",
+            "name": "_callData",
+            "type": "bytes[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.BatchHandler",
+        "name": "data",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address[]",
+            "name": "_positionWrappers",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_swapTokens",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address",
+            "name": "_deployer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_positionWrapperIndex",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_portfolioTokenIndex",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_index0",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_index1",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amount0Min",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amount1Min",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "bool[]",
+            "name": "_isExternalPosition",
+            "type": "bool[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_swapDeployer",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenIn",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "_tokenOut",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "_amountIn",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint24[]",
+            "name": "_fee",
+            "type": "uint24[]"
+          }
+        ],
+        "internalType": "struct FunctionParameters.ExternalPositionDepositParams",
+        "name": "_params",
+        "type": "tuple"
+      }
+    ],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
