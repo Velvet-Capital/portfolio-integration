@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useMetaMask } from "../contexts/MetaMaskContext";
 import { ethers } from "ethers";
 import { BigNumber } from "ethers";
-import { createEnsoCallDataRoute, calculateOutputAmounts, createEncodedParametersDecreaseLiquidity, createEncodedParametersDecreaseLiquidityWithSwap, createEncodedParametersIncreaseLiquidity } from "../config/helper";
+import { createEnsoCallDataRoute, calculateOutputAmounts, createEncodedParametersDecreaseLiquidity, createEncodedParametersDecreaseLiquidityWithSwap, createEncodedParametersIncreaseLiquidity, getTokenAmountOut, getEncodedDataForPositionLiquidityIncrease,getEncodedDataForPositionLiquidityDecrease } from "../config/helper";
 import { isExternalPosition, calculateDepositAmounts } from "../config/priceUtils";
 import { ENSO_HANDLER_ADDRESS, PORTFOLIO_ABI, REBALANCING_ABI, ERC20_ABI, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, AMOUNT_CALCULATIONS_ALGEBRA_ABI, POSITION_WRAPPER_ABI, ZERO_ADDRESS, priceOracleAddress } from "../config/contracts";
 
@@ -269,7 +269,7 @@ const UpdateWeight = ({ portfolio }) => {
                 }
 
             } else if (sellTokens.length === 2 && buyTokens.length === 1) {
-                //case 3rd : position to position                
+                //case 3rd : underlying to position                
                 const buyToken = buyTokens[0];
 
                 const buyTokenInfo = await isExternalPosition(buyToken, portfolioContract);
@@ -299,7 +299,9 @@ const UpdateWeight = ({ portfolio }) => {
 
                 const tokens = await portfolioContract.getTokens();
 
-                newTokens = tokens.filter(token => token !== sellToken0 && token !== sellToken1);
+
+
+               
 
                 const vault = await portfolioContract.vault();
 
@@ -312,12 +314,116 @@ const UpdateWeight = ({ portfolio }) => {
                 // Calculate the actual amounts to sell based on rebalance percentage
                 const percentageBN = ethers.BigNumber.from(rebalancePercentage);
                 const actualSellToken0Amount = ethers.BigNumber.from(sellToken0Balance).mul(percentageBN).div(100);
-                const actualSellToken1Amount = ethers.BigNumber.from(sellToken1Balance).mul(percentageBN).div(100);
 
-                const encodedParameters = await createEncodedParametersIncreaseLiquidity(sellToken0, actualSellToken1Amount, ENSO_HANDLER_ADDRESS, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, ZERO_ADDRESS, priceOracleAddress, true)
+                const isSellToken1Token0 = buyTokenInfo.token0 === sellToken1;
+
+                const requiredSellToken1Amount = await getTokenAmountOut(buyToken, actualSellToken0Amount, isSellToken1Token0, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, signer);
+                console.log({
+                    sellToken0Balance,
+                    sellToken1Balance,
+                    actualSellToken0Amount
+                })
+                console.log("requiredSellToken1Amount", requiredSellToken1Amount);
+
+                if (requiredSellToken1Amount.gt(sellToken1Balance)) {
+                    setError("Sell token1 balance is not enough");
+                    return;
+                }
+
+                if(requiredSellToken1Amount.eq(sellToken1Balance)){
+                    if(rebalancePercentage == 100){
+                        newTokens = tokens.filter(token => token !== sellToken0 && token !== sellToken1);
+                    } else {
+                        newTokens = tokens.filter(token =>  token !== sellToken1);
+                    }
+                } else {
+                    if(rebalancePercentage == 100){
+                        newTokens = tokens.filter(token => token !== sellToken0);
+                    } else {
+                        newTokens = tokens
+                    }
+                }
 
 
 
+
+                const rebalanceAmount0 = isSellToken1Token0 ? requiredSellToken1Amount : actualSellToken0Amount;
+                const rebalanceAmount1 = isSellToken1Token0 ? actualSellToken0Amount : requiredSellToken1Amount;     
+
+
+
+
+
+
+                const encodedParameters = await getEncodedDataForPositionLiquidityIncrease(buyToken, rebalanceAmount0, rebalanceAmount1 , ENSO_HANDLER_ADDRESS, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, await signer.getAddress(), priceOracleAddress)
+
+
+                console.log("buyToken", buyTokenInfo);
+                console.log("rebalanceAmount0", rebalanceAmount0.toString());
+                console.log("rebalanceAmount1", rebalanceAmount1.toString());
+
+                console.log("newTokens", newTokens);
+
+                const tnx = await rebalancingContract.updateTokens({
+                    _newTokens: newTokens,
+                    _sellTokens: [buyTokenInfo.token0, buyTokenInfo.token1],
+                    _sellAmounts: [rebalanceAmount0, rebalanceAmount1],
+                    _handler: ENSO_HANDLER_ADDRESS,
+                    _callData: encodedParameters,
+                }, {
+                    gasLimit: 2500000,
+                });
+                await tnx.wait();
+                setSuccess(true);
+                setNotification("Portfolio weights updated successfully!");
+
+
+            } else if (sellTokens.length === 1 && buyTokens.length === 2) {
+                //case 4th : position to underlying
+                const sellToken = sellTokens[0];
+                const sellTokenInfo = await isExternalPosition(sellToken, portfolioContract);
+
+                if (!sellTokenInfo.isExternal) {
+                    setError("Cannot sell token should be external position");
+                    return;
+                }
+
+                const buyToken0 = buyTokens[0];
+                const buyToken1 = buyTokens[1];
+
+                const tokens = await portfolioContract.getTokens();
+                if(rebalancePercentage == 100){
+                    newTokens = tokens.filter(token => token !== sellToken);
+                } else {
+                    newTokens = tokens
+                }
+
+                const vault = await portfolioContract.vault();
+
+                const sellTokenContract = new ethers.Contract(sellToken, ERC20_ABI, signer);
+
+                const sellTokenBalance = await sellTokenContract.balanceOf(vault);  
+
+                const percentageBN = ethers.BigNumber.from(rebalancePercentage);
+                const actualSellTokenAmount = ethers.BigNumber.from(sellTokenBalance).mul(percentageBN).div(100);
+
+                const encodedParameters = await getEncodedDataForPositionLiquidityDecrease(sellToken, actualSellTokenAmount, ENSO_HANDLER_ADDRESS, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, await signer.getAddress(), priceOracleAddress)
+
+
+                 const tnx = await rebalancingContract.updateTokens({
+                    _newTokens: newTokens,
+                    _sellTokens: [sellToken],
+                    _sellAmounts: [actualSellTokenAmount],
+                    _handler: ENSO_HANDLER_ADDRESS,
+                    _callData: encodedParameters,
+                }, {
+                    gasLimit: 2500000,
+                });
+                await tnx.wait();
+                setSuccess(true);
+                setNotification("Portfolio weights updated successfully!");
+                
+                
             }
 
 
@@ -459,12 +565,12 @@ const UpdateWeight = ({ portfolio }) => {
                     disabled={loading}
                     className="update-button"
                 >
-                    {loading ? "Updating..." : "Update Weights"}
+                    {loading ? "Updating..." : "Update Tokens"}
                 </button>
             </div>
 
             {error && <div className="error">{error}</div>}
-            {success && <div className="success">Weights updated successfully!</div>}
+            {success && <div className="success">Tokens updated successfully!</div>}
             {notification && <div className="notification">{notification}</div>}
         </div>
     );
