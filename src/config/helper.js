@@ -362,12 +362,29 @@ export async function createDepositBatchDataWithEnso(
     reinvestmentSwapInfo
   );
   console.log("*****************step 2 done*********************");
+  console.log("swapTokens", reinvestmentSwapInfo.swapTokens);
+  console.log("finalAmounts", finalAmounts);
+  const swapTokens = [];
+  const swapAmounts = [];
+  const isExternalPosition = [];
+  const portfolioTokenIndex = [];
+  for(let i = 0; i < reinvestmentSwapInfo.swapTokens.length; i++){
+    if(finalAmounts[i] > 0){
+      swapTokens.push(reinvestmentSwapInfo.swapTokens[i]);
+      swapAmounts.push(finalAmounts[i]);
+      isExternalPosition.push(reinvestmentSwapInfo.isExternalPosition[i]);
+      portfolioTokenIndex.push(reinvestmentSwapInfo.portfolioTokenIndex[i]);
+    }
+  }
+  reinvestmentSwapInfo.swapTokens = swapTokens;
+  reinvestmentSwapInfo.isExternalPosition = isExternalPosition;
+  reinvestmentSwapInfo.portfolioTokenIndex = portfolioTokenIndex;
 
   let ensoCalldata = await createEnsoCalldataDeposit(
     depositBatchAddress,
     depositToken,
-    reinvestmentSwapInfo.swapTokens,
-    finalAmounts
+    swapTokens,
+    swapAmounts
   );
 
   return { reinvestmentSwapInfo, ensoCalldata };
@@ -656,7 +673,7 @@ export async function getFlashLoanData(
   console.log("Factory:", thenaPoolInfo._factory);
 
 
-  let flashloanBufferUnit = 18; //Flashloan buffer unit in 1/10000, extra flashlaon to take, to fulfil the swap(from flashlaon to debt token)
+  let flashloanBufferUnit =25; //Flashloan buffer unit in 1/10000, extra flashlaon to take, to fulfil the swap(from flashlaon to debt token)
   let bufferUnit = 280; //Buffer unit for collateral amount in 1/100000, extra collateral to take, to fulfil the swap(from collateral underlying to flashlaon token)
 
   const portfolioCalculations = new ethers.Contract(
@@ -735,7 +752,9 @@ export async function getFlashLoanData(
   }
 
   console.log("flashLoanAmounts:", flashLoanAmounts);
+  flashLoanAmounts.map(amount => console.log("amount:", amount.toString()));
   console.log("AmountToSell:", amountToSell);
+  amountToSell.map(amount => console.log("amount:", amount.toString()));
 
   return {
     flashLoanAmounts,
@@ -2103,3 +2122,288 @@ export async function createEncodedParametersDecreaseLiquidityWithSwap(
 
   return encodedParameters;
 }
+
+
+export async function getEncodedDataForPositionLiquidityIncrease(
+  position,
+  token0Amount,
+  token1Amount,
+  ensoHandlerAddress,
+  amountCalculationsAddress,
+  dustReceiver,
+  priceOracleAddress,
+) {
+  const positionWrapper = new ethers.Contract(
+    position,
+    POSITION_WRAPPER_ABI,
+    provider
+  );
+
+  const token0 = await positionWrapper.token0();
+  const token1 = await positionWrapper.token1();
+
+  let sellTokenBalance0 =  BigNumber.from(token0Amount);
+  let sellTokenBalance1 =  BigNumber.from(token1Amount);
+
+  // Get position manager address
+  const positionManagerAddress = await positionWrapper.parentPositionManager();
+  
+  
+  // Encode approval function
+  let ABIApprove = ["function approve(address spender, uint256 amount)"];
+  let abiEncodeApprove = new ethers.utils.Interface(ABIApprove);
+  
+  // Get sell token balances
+
+
+  const totalSupply = await positionWrapper.totalSupply();
+  const isFirstDeposit = totalSupply.eq(0);
+
+  const amount0Min = BigNumber.from(0);
+  const amount1Min = BigNumber.from(0);
+
+  let approvalIndex = 0;
+  const callDataIncreaseLiquidity = [[]];
+  const increaseLiquidityTarget = [[]]
+
+  console.log("isFirstDeposit", isFirstDeposit);
+
+  if (sellTokenBalance0.gt(0)) {
+    callDataIncreaseLiquidity[0][approvalIndex] =
+      abiEncodeApprove.encodeFunctionData("approve", [
+        positionManagerAddress,
+        sellTokenBalance0.toString(),
+      ]);
+    increaseLiquidityTarget[0].push(token0);
+    approvalIndex++;
+  }
+
+  // Only approve token1 if amount > 0 (use reduced amounts for consistency)
+  if (sellTokenBalance1.gt(0)) {
+    callDataIncreaseLiquidity[0][approvalIndex] =
+      abiEncodeApprove.encodeFunctionData("approve", [
+        positionManagerAddress,
+        sellTokenBalance1.toString(),
+      ]);
+    increaseLiquidityTarget[0].push(token1);
+    approvalIndex++;
+  }
+
+  let ABI = [];
+  let functionName = "";
+  let functionParams = [];
+  // First position approval and initialization
+  if (isFirstDeposit) {
+    console.log("isFirstDeposit", isFirstDeposit);
+    // First deposit - use initializePositionAndDeposit
+    ABI = [
+      "function initializePositionAndDeposit(address _dustReceiver, address _positionWrapper, (uint256 _amount0Desired, uint256 _amount1Desired, uint256 _amount0Min, uint256 _amount1Min, address _deployer) params)",
+    ];
+
+    functionName = "initializePositionAndDeposit";
+    functionParams = [
+      dustReceiver, // _dustReceiver
+      position, // _positionWrapper
+      {
+        // Use reduced amounts for consistency with approvals
+        _amount0Desired: sellTokenBalance0,
+        _amount1Desired: sellTokenBalance1,
+        _amount0Min: amount0Min.toString(),
+        _amount1Min: amount1Min.toString(),
+        _deployer: ethers.constants.AddressZero,
+      },
+    ];
+  } else {
+    // Subsequent deposit - use increaseLiquidity
+    // Get reinvestment swap info for existing position
+    const reinvestmentSwapInfo = await getReinvestmentSwapInfo(
+      position,
+      priceOracleAddress,
+      amountCalculationsAddress
+    );
+
+    ABI = [
+      "function increaseLiquidity((address _dustReceiver, address _positionWrapper, uint256 _amount0Desired, uint256 _amount1Desired, uint256 _amount0Min, uint256 _amount1Min, address _swapDeployer, address _tokenIn, address _tokenOut, uint256 _amountIn, uint24 _fee) _params)",
+    ];
+
+    functionName = "increaseLiquidity";
+    functionParams = [
+      {
+        _dustReceiver: dustReceiver,
+        _positionWrapper: position,
+        // Use reduced amounts for consistency with approvals
+        _amount0Desired: sellTokenBalance0,
+        _amount1Desired: sellTokenBalance1,
+        _amount0Min: amount0Min.toString(),
+        _amount1Min: amount1Min.toString(),
+        _swapDeployer: ethers.constants.AddressZero,
+        // Use reinvestment swap info for existing position
+        _tokenIn: reinvestmentSwapInfo.tokenIn,
+        _tokenOut: reinvestmentSwapInfo.tokenOut,
+        _amountIn: reinvestmentSwapInfo.swapAmount.toString(),
+        _fee: 0,
+      },
+    ];
+  }
+
+
+  let abiEncode = new ethers.utils.Interface(ABI);
+
+  // Encode the function call at the next index after approvals
+  callDataIncreaseLiquidity[0][approvalIndex] = abiEncode.encodeFunctionData(
+    functionName,
+    functionParams
+  );
+  console.log("positionManagerAddress", positionManagerAddress);
+  increaseLiquidityTarget[0].push(positionManagerAddress);
+
+  
+  // Encode the final parameters
+  const encodedParameters = ethers.utils.defaultAbiCoder.encode(
+    [
+      "bytes[][]", // callDataEnso
+      "bytes[]", // callDataDecreaseLiquidity
+      "bytes[][]", // callDataIncreaseLiquidity
+      "address[][]", // increaseLiquidityTarget
+      "address[]", // underlyingTokensDecreaseLiquidity
+      "address[][]", // tokensIn
+      "address[][]", // tokensOut
+      "uint256[][]", // minExpectedOutputAmounts (out)
+    ],
+    [
+      [[]],
+      [],
+      callDataIncreaseLiquidity,
+      increaseLiquidityTarget,
+      [],
+      [[token0,token1]],
+      [[position]], 
+      [[0]],
+    ]
+  );
+  
+  return encodedParameters;
+}
+
+
+export async function getTokenAmountOut(
+  position,
+  amount,
+  isToken0,
+  amountCalculationsAddress,
+  signer
+) {
+  const multiplier = "1000000000000000000";
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    signer
+  );
+
+  const ratio = await amountCalculationsAlgebra.callStatic.getRatio(position);
+  console.log("ratio", ratio);
+  if(isToken0) {
+    const amountOut =  BigNumber.from(amount).mul(ratio).div(multiplier);
+    return amountOut;
+  } else {
+    const amountOut =  BigNumber.from(amount).mul(multiplier).div(ratio);
+    return amountOut;
+  }
+}
+
+export async function getEncodedDataForPositionLiquidityDecrease(
+  position,
+  sellTokenBalance,
+  ensoHandlerAddress,
+  amountCalculationsAddress,
+  dustReceiver,
+  priceOracleAddress,
+) {
+
+  const positionWrapper = new ethers.Contract(
+    position,
+    POSITION_WRAPPER_ABI,
+    provider
+  );
+
+  const token0 = await positionWrapper.token0();
+  const token1 = await positionWrapper.token1();
+
+  // Calculate percentage of position being sold
+  const amountCalculationsAlgebra = new ethers.Contract(
+    amountCalculationsAddress,
+    AMOUNT_CALCULATIONS_ALGEBRA_ABI,
+    provider
+  );
+
+  let percentage = await amountCalculationsAlgebra.getPercentage(
+    sellTokenBalance,
+    (await positionWrapper.totalSupply()).toString()
+  );
+
+  // Calculate underlying token amounts that will be withdrawn
+  let withdrawAmounts = await calculateOutputAmounts(
+    position,
+    amountCalculationsAddress,
+    percentage.toString()
+  );
+
+  // Prepare swap data for underlying tokens to target token
+  let callDataEnso = [[]];
+
+  // Create decrease liquidity call data
+  const callDataDecreaseLiquidity = [];
+  let ABI = [
+    "function decreaseLiquidity(address _positionWrapper, uint256 _withdrawalAmount, uint256 _amount0Min, uint256 _amount1Min, address _swapDeployer, address tokenIn, address tokenOut, uint256 amountIn, uint24 _fee)",
+  ];
+  let abiEncode = new ethers.utils.Interface(ABI);
+
+  callDataDecreaseLiquidity[0] = abiEncode.encodeFunctionData(
+    "decreaseLiquidity",
+    [
+      position,
+      sellTokenBalance,
+      0, // _amount0Min
+      0, // _amount1Min
+      ethers.constants.AddressZero, // _swapDeployer
+      token0, // tokenIn
+      token1, // tokenOut
+      0, // amountIn
+      100, // _fee
+    ]
+  );
+
+  // Prepare underlying tokens array
+  const underlyingTokens = [];
+  if (withdrawAmounts.token0Amount.gt(0)) {
+    underlyingTokens.push(token0);
+  }
+  if (withdrawAmounts.token1Amount.gt(0)) {
+    underlyingTokens.push(token1);
+  }
+
+  const encodedParameters = ethers.utils.defaultAbiCoder.encode(
+    [
+      "bytes[][]", // callDataEnso
+      "bytes[]", // callDataDecreaseLiquidity
+      "bytes[][]", // callDataIncreaseLiquidity
+      "address[][]", // increaseLiquidityTarget
+      "address[]", // underlyingTokensDecreaseLiquidity
+      "address[][]", // tokensIn
+      "address[][]", // tokensOut
+      "uint256[][]", // minExpectedOutputAmounts (out)
+    ],
+    [
+      callDataEnso,
+      callDataDecreaseLiquidity,
+      [[]], // Empty callDataIncreaseLiquidity
+      [[]], // Empty increaseLiquidityTarget
+      underlyingTokens, // Underlying tokens from the position
+      [[position]], // tokensIn - the position being sold
+      [[token0,token1]], // tokensOut - underlying tokens being received
+      [[0,0]], // minExpectedOutputAmounts
+    ]
+  );
+
+  return encodedParameters;
+} 
