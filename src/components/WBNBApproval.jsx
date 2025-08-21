@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
 import { PORTFOLIO_ABI } from '../config/contracts';
-import { PERMIT2_ADDRESS, MaxAllowanceTransferAmount } from "@uniswap/permit2-sdk";
+import { depositManagerAddress } from '../config/contracts';
 import './WBNBApproval.css';
 
 const WBNB_ADDRESS = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"; // BSC Mainnet
@@ -41,7 +41,7 @@ const WBNBApproval = ({ portfolio }) => {
       const balance = await tokenContract.balanceOf(account);
       const formattedBalance = ethers.utils.formatEther(balance);
       setWbnbBalance(formattedBalance);
-      
+
       if (balance.isZero()) {
         setShowBalanceWarning(true);
         return false;
@@ -60,7 +60,7 @@ const WBNBApproval = ({ portfolio }) => {
     if (/^\d*\.?\d*$/.test(value)) {
       setWbnbAmount(value);
     }
-    
+
     if (parseFloat(value) > parseFloat(wbnbBalance)) {
       setShowBalanceWarning(true);
     } else {
@@ -123,41 +123,33 @@ const WBNBApproval = ({ portfolio }) => {
       const WBNB = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
       const wbnbBalance = await WBNB.balanceOf(account);
       const requiredAmount = ethers.utils.parseEther(wbnbAmount);
-      
+
+      console.log("wbnbBalance", wbnbBalance.toString());
+      console.log("requiredAmount", requiredAmount.toString());
+
       if (wbnbBalance.lt(requiredAmount)) {
         setNotification('Funding account with WBNB...');
         // Mint WBNB for testing
         throw new Error('Not enough WBNB in account');
       }
 
-      console.log("wbnbBalance", wbnbBalance);
-      console.log("requiredAmount", requiredAmount);
-
-      console.log("tokens", tokens);
-
-      // Approve tokens to Permit2
-      setNotification('Starting token approvals to Permit2...');
-      for (let i = 0; i < tokens.length; i++) {
-        setNotification(`Approving token ${i + 1}/${tokens.length}...`);
-        try {
-          console.log("approving token___________________________________");
-          const tokenContract = new ethers.Contract(tokens[i], ERC20_ABI, signer);
-          setNotification(`Resetting approval for token ${i + 1}...`);
-          const resetTx = await tokenContract.approve(PERMIT2_ADDRESS, 0, { gasLimit: 1000000 });
-          await resetTx.wait();
-          setNotification(`Setting max approval for token ${i + 1}...`);
-          const approveTx = await tokenContract.approve(
-            PERMIT2_ADDRESS,
-            MaxAllowanceTransferAmount,
-            { gasLimit: 1000000 }
-          );
-          await approveTx.wait();
-          setNotification(`Successfully approved token ${i + 1}`);
-        } catch (error) {
-          console.error(`Error approving token ${tokens[i]}:`, error);
-          throw error;
-        }
+      try {
+        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+        setNotification('Resetting approval...');
+        const resetTx = await tokenContract.approve(depositManagerAddress, 0, { gasLimit: 1000000 });
+        await resetTx.wait();
+        setNotification('Setting approval...');
+        const approveTx = await tokenContract.approve(
+          depositManagerAddress,  
+          requiredAmount,
+          { gasLimit: 1000000 }
+        );
+        await approveTx.wait();
+      } catch (error) {
+        setError(error.message);
+        throw error;
       }
+
       setNotification('All token approvals completed successfully!');
       setSuccess(true);
     } catch (err) {
@@ -190,7 +182,7 @@ const WBNBApproval = ({ portfolio }) => {
         />
         <span className="input-suffix">Tokens</span>
       </div>
-      
+
       <button
         onClick={approveWBNB}
         disabled={loading || !wbnbAmount || !tokenAddress}
@@ -198,13 +190,13 @@ const WBNBApproval = ({ portfolio }) => {
       >
         {loading ? 'Approving Token...' : 'Approve Token'}
       </button>
-      
+
       {notification && (
         <div className="notification">
           <p>{notification}</p>
         </div>
       )}
-      
+
       {showBalanceWarning && (
         <div className="balance-warning">
           <p>⚠️ Your WBNB balance is {wbnbBalance} WBNB</p>
@@ -212,14 +204,14 @@ const WBNBApproval = ({ portfolio }) => {
           <button onClick={() => setShowBalanceWarning(false)}>Dismiss</button>
         </div>
       )}
-      
+
       {error && (
         <div className="error">
           <p>{error}</p>
           <button onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
-      
+
       {success && (
         <div className="success">
           <p>WBNB approval completed successfully!</p>
