@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMetaMask } from "../contexts/MetaMaskContext";
 import { ethers } from "ethers";
+import { BigNumber } from "ethers";
 import { PORTFOLIO_ABI } from "../config/contracts";
 import { PERMIT2_ADDRESS, AllowanceTransfer } from "@uniswap/permit2-sdk";
 import "./DepositWBNB.css";
@@ -18,6 +19,8 @@ import {
   tokenBalanceLibraryAddress,
   swapVerificationLibraryAddress,
   AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,
+  depositManagerAddress,
+  DEPOSIT_MANAGER_ABI,
 } from "../config/contracts";
 import axios from "axios";
 import qs from "qs";
@@ -49,8 +52,20 @@ const DepositWBNB = ({ portfolio }) => {
     }
   };
 
+  const handleTokenAddressChange = (e) => {
+    const value = e.target.value;
+    setTokenAddress(value);
+  };
+
   const handleDeposit = async () => {
+    console.log("handleDeposit__________________________________");
+    console.log("portfolio:", portfolio);
+    console.log("account:", account);
+    console.log("amount:", amount);
+    console.log("tokenAddress:", tokenAddress);
+    
     if (!account) {
+      console.log("No account, connecting...");
       await connect();
       return;
     }
@@ -60,27 +75,91 @@ const DepositWBNB = ({ portfolio }) => {
       return;
     }
 
+    if (!tokenAddress) {
+      setError("Please enter a token address");
+      return;
+    }
+
+    if (!portfolio || !portfolio.portfolioAddress) {
+      setError("Portfolio information is missing");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(false);
     setNotification("Starting WBNB deposit process...");
 
     try {
+      console.log("account__________________________________", account);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
+      console.log("signer__________________________________", signer);
       const chainId = (await provider.getNetwork()).chainId;
+      console.log("chainId:", chainId);
+      
       const depositBatch = new ethers.Contract(
         depositBatchAddress,
         DEPOSIT_BATCH_ABI,
         signer
       );
 
+      const depositManager = new ethers.Contract(
+        depositManagerAddress,
+        DEPOSIT_MANAGER_ABI,
+        signer
+      );
+
       const depositAmountInWei = ethers.utils.parseEther(amount);
 
-      // Get portfolio contract
-      let depositToken = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-      const {
-        reinvestmentSwapInfo: {
+      console.log("tokenAddress", tokenAddress);
+      console.log("depositAmountInWei", depositAmountInWei.toString());
+
+      let depositToken;
+      if (tokenAddress === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        depositToken = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
+      } else {
+        depositToken = tokenAddress;
+      }
+
+      console.log("depositToken", depositToken);
+
+      setNotification("Creating deposit batch data...");
+      
+      try {
+        // Get portfolio contract
+        const {
+          reinvestmentSwapInfo: {
+            positionWrappers,
+            positionWrapperIndex,
+            swapTokens,
+            isExternalPosition,
+            portfolioTokenIndex,
+            isTokenExternalPosition,
+            index0,
+            index1,
+            tokensIn,
+            tokensOut,
+            swapAmounts,
+            feeTiers,
+            amountsMin0,
+            amountsMin1,
+            swapDeployer,
+          },
+          ensoCalldata,
+        } = await createDepositBatchDataWithEnso(
+          priceOracleAddress,
+          tokenBalanceLibraryAddress,
+          swapVerificationLibraryAddress,
+          AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,
+          portfolio.portfolioAddress,
+          depositBatchAddress,
+          depositToken,
+          depositAmountInWei
+        );
+
+        console.log("createDepositBatchDataWithEnso completed successfully");
+        console.log({
           positionWrappers,
           positionWrapperIndex,
           swapTokens,
@@ -96,73 +175,85 @@ const DepositWBNB = ({ portfolio }) => {
           amountsMin0,
           amountsMin1,
           swapDeployer,
-        },
-        ensoCalldata,
-      } = await createDepositBatchDataWithEnso(
-        priceOracleAddress,
-        tokenBalanceLibraryAddress,
-        swapVerificationLibraryAddress,
-        AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS,
-        portfolio.portfolioAddress,
-        depositBatchAddress,
-        depositToken,
-        depositAmountInWei
-      );
+        });
 
-      console.log({
-        positionWrappers,
-        positionWrapperIndex,
-        swapTokens,
-        isExternalPosition,
-        portfolioTokenIndex,
-        isTokenExternalPosition,
-        index0,
-        index1,
-        tokensIn,
-        tokensOut,
-        swapAmounts,
-        feeTiers,
-        amountsMin0,
-        amountsMin1,
-        swapDeployer,
-      });
+        let depositTx;
 
-      const depositTx = await depositBatch.multiTokenSwapETHAndTransfer(
-        {
-          _minMintAmount: 0,
-          _depositAmount: depositAmountInWei,
-          _target: portfolio.portfolioAddress,
-          _depositToken: depositToken,
-          _callData: ensoCalldata,
-        },
-        {
-          _positionWrappers: positionWrappers,
-          _swapTokens: swapTokens,
-          _positionWrapperIndex: positionWrapperIndex,
-          _portfolioTokenIndex: portfolioTokenIndex,
-          _index0: index0,
-          _index1: index1,
-          _amount0Min: amountsMin0,
-          _amount1Min: amountsMin1,
-          _isExternalPosition: isExternalPosition,
-          _swapDeployer: swapDeployer,
-          _tokenIn: tokensIn,
-          _tokenOut: tokensOut,
-          _amountIn: swapAmounts,
-          _deployer: ZERO_ADDRESS,
-          _fee: feeTiers,
-        },
-        {
-          value: depositAmountInWei,
-          gasLimit: 10000000,
+        if (depositToken === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+          setNotification("Executing ETH deposit transaction...");
+          depositTx = await depositBatch.multiTokenSwapETHAndTransfer(
+            {
+              _minMintAmount: 0,
+              _depositAmount: depositAmountInWei,
+              _target: portfolio.portfolioAddress,
+              _depositToken: depositToken,
+              _callData: ensoCalldata,
+            },
+            {
+              _positionWrappers: positionWrappers,
+              _swapTokens: swapTokens,
+              _positionWrapperIndex: positionWrapperIndex,
+              _portfolioTokenIndex: portfolioTokenIndex,
+              _index0: index0,
+              _index1: index1,
+              _amount0Min: amountsMin0,
+              _amount1Min: amountsMin1,
+              _isExternalPosition: isExternalPosition,
+              _swapDeployer: swapDeployer,
+              _tokenIn: tokensIn,
+              _tokenOut: tokensOut,
+              _amountIn: swapAmounts,
+              _deployer: ZERO_ADDRESS,
+              _fee: feeTiers,
+            },
+            {
+              value: depositAmountInWei,
+              gasLimit: 10000000,
+            }
+          );
+        } else {
+          setNotification("Executing token deposit transaction...");
+          depositTx = await depositManager.deposit(
+            {
+              _minMintAmount: 0,
+              _depositAmount: depositAmountInWei,
+              _target: portfolio.portfolioAddress,
+              _depositToken: depositToken,
+              _callData: ensoCalldata,
+            },
+            {
+              _positionWrappers: positionWrappers,
+              _swapTokens: swapTokens,
+              _positionWrapperIndex: positionWrapperIndex,
+              _portfolioTokenIndex: portfolioTokenIndex,
+              _index0: index0,
+              _index1: index1,
+              _amount0Min: amountsMin0,
+              _amount1Min: amountsMin1,
+              _isExternalPosition: isExternalPosition,
+              _swapDeployer: swapDeployer,
+              _tokenIn: tokensIn,
+              _tokenOut: tokensOut,
+              _amountIn: swapAmounts,
+              _deployer: ZERO_ADDRESS,
+              _fee: feeTiers,
+            },
+            {
+              gasLimit: 10000000,
+            }
+          );
         }
-      );
 
-      setNotification("Waiting for deposit transaction to be mined...");
-      await depositTx.wait();
+        setNotification("Waiting for deposit transaction to be mined...");
+        await depositTx.wait();
 
-      setNotification("Deposit completed successfully!");
-      setSuccess(true);
+        setNotification("Deposit completed successfully!");
+        setSuccess(true);
+      } catch (helperError) {
+        console.error("Error in createDepositBatchDataWithEnso:", helperError);
+        setError(`Error preparing deposit data: ${helperError.message}`);
+        throw helperError;
+      }
     } catch (err) {
       console.error("Error during deposit:", err);
       setError(err.message || "Failed to deposit tokens. Please try again.");
@@ -247,13 +338,13 @@ const DepositWBNB = ({ portfolio }) => {
   return (
     <div className="deposit-wbnb">
       <div className="input-group">
-        {/* <input
+        <input
           type="text"
           value={tokenAddress}
-          onChange={(e) => setTokenAddress(e.target.value)}
+          onChange={handleTokenAddressChange}
           placeholder="Enter token address"
           className="wbnb-input"
-        /> */}
+        />
       </div>
       <div className="input-group">
         <input
@@ -273,7 +364,6 @@ const DepositWBNB = ({ portfolio }) => {
       >
         {loading ? "Processing Deposit..." : "Deposit BNB"}
       </button>
-
       {notification && (
         <div className="notification">
           <p>{notification}</p>
