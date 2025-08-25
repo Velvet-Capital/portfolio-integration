@@ -18,12 +18,10 @@ import { getWithdrawBatchData } from "../config/helper";
 import { chainIdToAddresses } from "../config/networkVariables";
 const addresses = chainIdToAddresses[56];
 
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const thenaFactory = "0x30055F87716d3DFD0E5198C27024481099fB4A98";
-const ensoHandlerAddress = "0x3dd84Be9bF8019c6c7A9E8E1682A9a707b2FB79b";
+
+const ensoHandlerAddress = "0x7133A7f3bBea06584fB439c1F9E9cc80FEf59c2e";
 const tokenToSwapInto = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee";
-const swapHandler = "0x8317430C7B3873e63467276eBDBC6be91d7c747E";
-const swapHandlerV3 = "0x053Bfb69c038F8DaF90d9B0A86743574294fc0B0";
+const swapHandlerV3 = "0x3C2b5e79495BB4358d8B16d9B1F552423808013b";
 
 const WithdrawWBNB = ({ portfolio }) => {
   const { account, connect } = useMetaMask();

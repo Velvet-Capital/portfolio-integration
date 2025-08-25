@@ -1,12 +1,10 @@
 import { ethers } from "ethers";
 // Contract Addresses
-export const PORTFOLIO_FACTORY_ADDRESS = "0xd683eB75797FaCd7B18E97A8F1aDe660486B1DbC"
+export const PORTFOLIO_FACTORY_ADDRESS = "0xBB5c5929dC2322e5F93EE23648df9eaEa9918E0D"
 export const TREASURY_ADDRESS = "0x04d740D2D93AF7417060Ec7b35415c81820470d0"
 
 // Protocol Configuration
-export const THENA_PROTOCOL_HASH = ethers.utils.keccak256(
-  ethers.utils.toUtf8Bytes("THENA-CONCENTRATED-LIQUIDITY")
-);
+export const THENA_PROTOCOL_HASH = "0xa86b32b5c032e5b3190e650ceaca953a6eaf8b7a3cd0a8f0332ff19dc3adbd13"
 
 // Network Configuration
 export const NETWORK_ID = import.meta.env.VITE_NETWORK_ID || "1";
@@ -3947,6 +3945,11 @@ export const ASSET_MANAGEMENT_CONFIG_ABI = [
 export const POSITION_MANAGER_ALGEBRA_ABI = [
   {
     "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
     "name": "AmountCannotBeZero",
     "type": "error"
   },
@@ -3958,11 +3961,6 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
   {
     "inputs": [],
     "name": "CallerNotAssetManager",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "DivisionByZero",
     "type": "error"
   },
   {
@@ -4040,6 +4038,19 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
       }
     ],
     "name": "BeaconUpgraded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "ETHTransferredToVault",
     "type": "event"
   },
   {
@@ -4162,12 +4173,156 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
       {
         "indexed": true,
         "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "TokenTransferredToVault",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "implementation",
         "type": "address"
       }
     ],
     "name": "Upgraded",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "ETHERNAL_FARMING_ADDRESS",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "FARMING_CENTER_ADDRESS",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "rewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "bonusRewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nonce",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveAndAddForFarming",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "assetManagementConfig",
+    "outputs": [
+      {
+        "internalType": "contract IAssetManagementConfig",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "rewardToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "bonusRewardToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "pool",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nonce",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IFarmingCenter.IncentiveKey",
+        "name": "key",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimRewards",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "collectFees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -4278,7 +4433,7 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
             "type": "address"
           }
         ],
-        "internalType": "struct WrapperFunctionParameters.PositionMintParamsThena",
+        "internalType": "struct WrapperFunctionParameters.PositionMintParamsAlgebra",
         "name": "params",
         "type": "tuple"
       }
@@ -4318,27 +4473,27 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
       },
       {
         "internalType": "address",
-        "name": "_swapDeployer",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenIn",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "tokenOut",
+        "name": "",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "amountIn",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint24",
-        "name": "_fee",
+        "name": "",
         "type": "uint24"
       }
     ],
@@ -4364,6 +4519,39 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "rewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "bonusRewardToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "nonce",
+        "type": "uint256"
+      }
+    ],
+    "name": "exitFarming",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -4482,6 +4670,11 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
         "type": "address"
       },
       {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
         "internalType": "bytes32",
         "name": "_protocolId",
         "type": "bytes32"
@@ -4532,7 +4725,7 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
             "type": "address"
           }
         ],
-        "internalType": "struct WrapperFunctionParameters.InitialMintParams",
+        "internalType": "struct WrapperFunctionParameters.InitialMintParamsAlgebra",
         "name": "params",
         "type": "tuple"
       }
@@ -4579,6 +4772,19 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "transferTokenToVault",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -4682,17 +4888,16 @@ export const POSITION_MANAGER_ALGEBRA_ABI = [
     "stateMutability": "payable",
     "type": "function"
   }
-];
-
+]
 
 export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ABI = [
   "function verifySwap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) view returns (bool)"
 ];
 
 // Contract Addresses
-export const TOKEN_BALANCE_LIBRARY_ADDRESS = "0xA769Fc0Eb074af2a7cd126555D8c87802739E9b2";
-export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS = "0xE440CBE1fdcf83F70d3E298bFc844265C1b35e41";
-export const ENSO_HANDLER_ADDRESS = "0x3dd84Be9bF8019c6c7A9E8E1682A9a707b2FB79b";
+export const TOKEN_BALANCE_LIBRARY_ADDRESS = "0xb95dc48774d9B9EF7b8CCe19068b41B9e10463df";
+export const SWAP_VERIFICATION_LIBRARY_ALGEBRA_ADDRESS = "0x60c29EF13b2629fD0B5aB36410401D81D47BD349";
+export const ENSO_HANDLER_ADDRESS = "0x7133A7f3bBea06584fB439c1F9E9cc80FEf59c2e";
 export const POSITION_MANAGER_ABI = [
   "function getDeployedPositionWrappersLength() view returns (uint256)",
   "function deployedPositionWrappers(uint256) view returns (address)",
@@ -6587,7 +6792,7 @@ export const AMOUNT_CALCULATIONS_ALGEBRA_ABI = [
   }
 ]
 
-export const AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS = "0xdcA46f2575BD85E3CaaafA34AA457c77C15d6B75"
+export const AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS = "0xA49419ecDBF7b4b25d2C575182Ed69A25C0A6e81"
 
 export const DEPOSIT_BATCH_ABI = [
   {
@@ -6883,7 +7088,7 @@ export const DEPOSIT_BATCH_ABI = [
 
 export const depositBatchAddress = "0x8fFe87dA29a1A9DfF64Bf1BCB3abaa2137205699"
 
-export const priceOracleAddress = "0x139Dd769394FF8eDE4A0aC927a58cC9fe80Ca4E2"
+export const priceOracleAddress = "0x50e4Bf2367A14b8A21A018Da7F033724cCcA8112"
 
 export const PRICE_ORACLE_ABI = [
   {
@@ -7182,7 +7387,7 @@ export const PRICE_ORACLE_ABI = [
   }
 ]
 
-export const venusAssetHandlerAddress = "0xae5029268BE9Fb60083d8087a09355AfD4Cb48c2"
+export const venusAssetHandlerAddress = "0x996704fdb3341EbcAb3D8AD60610d18C1cF735CC"
 
 export const VENUS_ASSET_HANDLER_ABI = [
   {
@@ -9474,9 +9679,9 @@ export const PORTFOLIO_CALCULATIONS_ABI =  [
   }
 ]
 
-export const portfolioCalculationsAddress = "0x7183c0D06fE3B7150473731e5E0fDCD32FCcB74c"
+export const portfolioCalculationsAddress = "0xFA1989D1e0da32fAD9322Ab620F443062B858038"
 
-export const tokenBalanceLibraryAddress = "0xA769Fc0Eb074af2a7cd126555D8c87802739E9b2"
+export const tokenBalanceLibraryAddress = "0xb95dc48774d9B9EF7b8CCe19068b41B9e10463df"
 
 export const TOKEN_BALANCE_LIBRARY_ABI = [
   {
@@ -9632,12 +9837,12 @@ export const EXTERNAL_POSITION_STORAGE_ABI =[
   }
 ]
 
-export const swapVerificationLibraryAddress = "0xE440CBE1fdcf83F70d3E298bFc844265C1b35e41"
+export const swapVerificationLibraryAddress = "0x60c29EF13b2629fD0B5aB36410401D81D47BD349"
 
 
-export const withdrawBatchAddress="0x2c8D1eFD398947Ce967f387E54A8cE2b30E03B60"
+export const withdrawBatchAddress="0x24e2d3217ebCFf91a0Cb5556c666bEBd42432125"
 
-export const withdrawManagerAddress="0x1E0FeE15170D2A1504D862977B46C1a84e154C00"
+export const withdrawManagerAddress="0xA857538e9b56F4a69C29285c5893A5cDDCeB941e"
 
 export const WITHDRAW_MANAGER_ABI= [
   {
@@ -10387,3 +10592,76 @@ export const DEPOSIT_MANAGER_ABI = [
     "type": "function"
   }
 ]
+
+export const FACTORY_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "poolByPair",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+
+export const FACTORY_ADDRESS = "0x30055F87716d3DFD0E5198C27024481099fB4A98"
+
+export const POOL_TO_KEY_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "pool",
+        "type": "address"
+      }
+    ],
+    "name": "poolToKey",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "rewardToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "bonusRewardToken",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "pool",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nonce",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct IFarmingCenter.IncentiveKey",
+        "name": "key",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];

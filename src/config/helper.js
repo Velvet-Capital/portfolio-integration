@@ -1107,7 +1107,7 @@ export async function getExpectedFeesExternalPosition(
 
   // 1. Get the contract instance
   const nftManager = new ethers.Contract(
-    "0xa51adb08cbe6ae398046a23bec013979816b77ab", // your contract address
+    "0x643B68Bf3f855B8475C0A700b6D1020bfc21d02e", // your contract address
     nftManagerAbi,
     provider
   );
