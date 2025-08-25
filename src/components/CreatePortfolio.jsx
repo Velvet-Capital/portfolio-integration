@@ -12,6 +12,7 @@ import UpdateWeight from './UpdateWeight';
 import ThenaInitialization from './ThenaInitialization';
 import ApproveAndAddForFarming from './ApproveAndAddForFarming';
 import ClaimRewards from './ClaimRewards';
+import UpdateRange from './UpdateRange';
 import { PORTFOLIO_FACTORY_ABI, PORTFOLIO_FACTORY_ADDRESS, TREASURY_ADDRESS, THENA_PROTOCOL_HASH } from '../config/contracts';
 import './CreatePortfolio.css';
 
@@ -493,6 +494,7 @@ const CreatePortfolio = () => {
                         <Borrow portfolio={p} />
                         <ApproveAndAddForFarming portfolio={p} />
                         <ClaimRewards portfolio={p} />
+                        <UpdateRange portfolio={p} />
                       </div>
                     )}
                   </div>
