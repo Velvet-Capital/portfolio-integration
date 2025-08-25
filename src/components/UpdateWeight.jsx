@@ -391,11 +391,12 @@ const UpdateWeight = ({ portfolio }) => {
                 const buyToken0 = buyTokens[0];
                 const buyToken1 = buyTokens[1];
 
-                const tokens = await portfolioContract.getTokens();
+                let tokens = await portfolioContract.getTokens();
                 if(rebalancePercentage == 100){
                     newTokens = tokens.filter(token => token !== sellToken);
+                    newTokens = [...newTokens, buyToken0, buyToken1]
                 } else {
-                    newTokens = tokens
+                    newTokens = [...tokens, buyToken0, buyToken1]
                 }
 
                 const vault = await portfolioContract.vault();
