@@ -10,6 +10,7 @@ import Borrow from './Borrow';
 import PortfolioInvestment from './PortfolioInvestment';
 import UpdateWeight from './UpdateWeight';
 import ThenaInitialization from './ThenaInitialization';
+// import ApproveAndAddForFarming from './ApproveAndAddForFarming';
 import { PORTFOLIO_FACTORY_ABI, PORTFOLIO_FACTORY_ADDRESS, TREASURY_ADDRESS, THENA_PROTOCOL_HASH } from '../config/contracts';
 import './CreatePortfolio.css';
 
@@ -40,14 +41,15 @@ const CreatePortfolio = () => {
   const [success, setSuccess] = useState(false);
   const [portfolioAddress, setPortfolioAddress] = useState(null);
   const [portfolios, setPortfolios] = useState([]);
-  const [portfolio, setPortfolio] = useState(null);
   const [remountKey, setRemountKey] = useState(0);
   const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = async () => {
-    if (portfolio?.portfolioAddress) {
+  const [expandedPortfolios, setExpandedPortfolios] = useState(new Set());
+
+  const copyToClipboard = async (address) => {
+    if (address) {
       try {
-        await navigator.clipboard.writeText(portfolio.portfolioAddress);
+        await navigator.clipboard.writeText(address);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
@@ -74,8 +76,47 @@ const CreatePortfolio = () => {
     }
   };
 
+
+
+  const refreshPortfolios = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (account) {
+        await fetchUserPortfolios();
+      }
+    } catch (err) {
+      console.error('Error refreshing portfolios:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const togglePortfolioExpansion = (portfolioId) => {
+    const newExpanded = new Set(expandedPortfolios);
+    if (newExpanded.has(portfolioId)) {
+      newExpanded.delete(portfolioId);
+    } else {
+      newExpanded.add(portfolioId);
+    }
+    setExpandedPortfolios(newExpanded);
+  };
+
+  const toggleAllPortfolios = () => {
+    if (expandedPortfolios.size === portfolios.length) {
+      // Collapse all
+      setExpandedPortfolios(new Set());
+    } else {
+      // Expand all
+      const allPortfolioIds = portfolios.map(p => p.portfolioId || p.portfolioAddress);
+      setExpandedPortfolios(new Set(allPortfolioIds));
+    }
+  };
+
   useEffect(() => {
-    fetchUserPortfolios();
+    if (account) {
+      fetchUserPortfolios();
+    }
   }, [account]);
 
   const createPortfolio = async () => {
@@ -297,10 +338,6 @@ const CreatePortfolio = () => {
       const data = await response.json();
       console.log("data", data);
       setPortfolios(data);
-      // Set the first portfolio as the current portfolio if available
-      if (data && data.length > 0) {
-        setPortfolio(data[0]);
-      }
       console.log("portfolios", portfolios);
     } catch (err) {
       setError(err.message || 'Failed to load portfolio data');
@@ -343,46 +380,128 @@ const CreatePortfolio = () => {
         </div>
       )}
 
-      {portfolio && (
-        <div className="portfolio-management">
-          <div className="portfolio-info">
-            <h3>{portfolio.name}</h3>
-            <div className="address-container">
-              <p>Address: {portfolio.portfolioAddress}</p>
-              <button onClick={copyToClipboard} className="copy-button">
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-            <p>Symbol: {portfolio.symbol}</p>
-          </div>
 
-          {!portfolio.initializedThena ? <ThenaInitialization portfolioAddress={portfolio.portfolioAddress} loadPortfolio={loadPortfolio} />
-            : <div className="portfolio-actions">
-              <CreatePosition portfolioAddress={portfolio.portfolioAddress} />
-              <InitToken portfolioAddress={portfolio.portfolioAddress} />
-              <WBNBApproval portfolio={portfolio} />
-              <PortfolioInvestment portfolio={portfolio} />
-              <DepositWBNB portfolio={portfolio} />
-              <RebalancePortfolio portfolio={portfolio} />
-              <WithdrawWBNB portfolio={portfolio} />
-              <UpdateWeight portfolio={portfolio} />
-              <Borrow portfolio={portfolio} />
-            </div>}
-        </div>
-      )}
 
       {portfolios.length > 0 && (
         <div className="portfolios-list">
-          <h3>Your Portfolios</h3>
-          {portfolios.map((p, index) => (
-            <div key={index} className="portfolio-item">
-              <p>Name: {p.name}</p>
-              <p>Address: {p.portfolioAddress}</p>
-              <button onClick={() => setPortfolio(p)}>Select</button>
+          <div className="portfolios-header">
+            <h3>Your Portfolios ({portfolios.length})</h3>
+            <div className="header-actions">
+              <button 
+                onClick={refreshPortfolios} 
+                disabled={loading}
+                className="refresh-btn"
+              >
+                {loading ? 'Refreshing...' : '🔄 Refresh'}
+              </button>
+
+              {portfolios.length > 0 && (
+                <button 
+                  onClick={toggleAllPortfolios} 
+                  disabled={loading}
+                  className="expand-all-btn"
+                >
+                  {expandedPortfolios.size === portfolios.length ? 'Collapse All' : 'Show All Components'}
+                </button>
+              )}
             </div>
-          ))}
+          </div>
+          <div className="portfolios-grid">
+            {portfolios.map((p, index) => (
+              <div key={index} className="portfolio-card">
+                <div className="portfolio-header">
+                  <h4>{p.name} ({p.symbol})</h4>
+                  <div className="portfolio-status">
+                    <span className={`status-badge ${p.initializedThena ? 'initialized' : 'pending'}`}>
+                      {p.initializedThena ? 'Initialized' : 'Pending Init'}
+                    </span>
+                    <button 
+                      onClick={() => togglePortfolioExpansion(p.portfolioId || p.portfolioAddress)}
+                      className="expand-btn"
+                    >
+                      {expandedPortfolios.has(p.portfolioId || p.portfolioAddress) ? '▼' : '▶'}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="portfolio-address-top">
+                  <span className="address-label">Portfolio Address:</span>
+                  <span className="address-value">
+                    {p.portfolioAddress ? p.portfolioAddress : 'N/A'}
+                  </span>
+                  <button 
+                    onClick={() => copyToClipboard(p.portfolioAddress)} 
+                    className="copy-btn-small"
+                  >
+                    {copied ? '✓' : '📋'}
+                  </button>
+                </div>
+                
+                <div className="portfolio-details">
+                  <div className="detail-row">
+                    <span className="label">Portfolio ID:</span>
+                    <span className="value">{p.portfolioId || 'N/A'}</span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="label">Address:</span>
+                    <span className="value address">
+                      {p.portfolioAddress ? 
+                        `${p.portfolioAddress.slice(0, 6)}...${p.portfolioAddress.slice(-4)}` : 
+                        'N/A'
+                      }
+                    </span>
+                  </div>
+                  
+                  <div className="detail-row">
+                    <span className="label">Owner:</span>
+                    <span className="value address">
+                      {p.owner ? 
+                        `${p.owner.slice(0, 6)}...${p.owner.slice(-4)}` : 
+                        'N/A'
+                      }
+                    </span>
+                  </div>
+                  
+                  {p.createdAt && (
+                    <div className="detail-row">
+                      <span className="label">Created:</span>
+                      <span className="value">
+                        {new Date(p.createdAt).toLocaleDateString()} {new Date(p.createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+
+                {account && (
+                  <div className="portfolio-transactions">
+                    <h5>Portfolio Actions</h5>
+                    {!p.initializedThena ? (
+                      <ThenaInitialization portfolioAddress={p.portfolioAddress} loadPortfolio={loadPortfolio} />
+                    ) : (
+                      <div className="transaction-components">
+                        <CreatePosition portfolioAddress={p.portfolioAddress} />
+                        <InitToken portfolioAddress={p.portfolioAddress} />
+                        <WBNBApproval portfolio={p} />
+                        <PortfolioInvestment portfolio={p} />
+                        <DepositWBNB portfolio={p} />
+                        <RebalancePortfolio portfolio={p} />
+                        <WithdrawWBNB portfolio={p} />
+                        <UpdateWeight portfolio={p} />
+                        <Borrow portfolio={p} />
+                        {/* <ApproveAndAddForFarming portfolio={p} /> */}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
+
+
     </div>
   );
 };
