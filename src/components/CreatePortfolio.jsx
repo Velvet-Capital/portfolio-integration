@@ -10,7 +10,7 @@ import Borrow from './Borrow';
 import PortfolioInvestment from './PortfolioInvestment';
 import UpdateWeight from './UpdateWeight';
 import ThenaInitialization from './ThenaInitialization';
-// import ApproveAndAddForFarming from './ApproveAndAddForFarming';
+import ApproveAndAddForFarming from './ApproveAndAddForFarming';
 import { PORTFOLIO_FACTORY_ABI, PORTFOLIO_FACTORY_ADDRESS, TREASURY_ADDRESS, THENA_PROTOCOL_HASH } from '../config/contracts';
 import './CreatePortfolio.css';
 
@@ -490,7 +490,7 @@ const CreatePortfolio = () => {
                         <WithdrawWBNB portfolio={p} />
                         <UpdateWeight portfolio={p} />
                         <Borrow portfolio={p} />
-                        {/* <ApproveAndAddForFarming portfolio={p} /> */}
+                        <ApproveAndAddForFarming portfolio={p} />
                       </div>
                     )}
                   </div>
