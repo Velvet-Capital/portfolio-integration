@@ -10665,3 +10665,187 @@ export const POOL_TO_KEY_ABI = [
     "type": "function"
   }
 ];
+
+export const SWAP_VERIFICATION_LIBRARY_ABI=[
+  {
+    "inputs": [],
+    "name": "InvalidSwap",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidSwapAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidSwapToken",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "tickOutOfRange",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IProtocolConfig",
+        "name": "protocolConfig",
+        "type": "IProtocolConfig"
+      },
+      {
+        "components": [
+          {
+            "internalType": "contract IPositionWrapper",
+            "name": "_positionWrapper",
+            "type": "IPositionWrapper"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_amountIn",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "_swapDeployer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token0",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_token1",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_tokenIn",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "_tokenOut",
+            "type": "address"
+          },
+          {
+            "internalType": "int24",
+            "name": "_tickLower",
+            "type": "int24"
+          },
+          {
+            "internalType": "int24",
+            "name": "_tickUpper",
+            "type": "int24"
+          },
+          {
+            "internalType": "uint24",
+            "name": "_fee",
+            "type": "uint24"
+          }
+        ],
+        "internalType": "struct WrapperFunctionParameters.SwapParams",
+        "name": "_params",
+        "type": "tuple"
+      }
+    ],
+    "name": "checkSwapAmountIsDust",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_nftManager",
+        "type": "address"
+      }
+    ],
+    "name": "getFactoryAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "contract IProtocolConfig",
+        "name": "_protocolConfig",
+        "type": "IProtocolConfig"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_balanceBeforeSwap",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_balanceAfterSwap",
+        "type": "uint256"
+      }
+    ],
+    "name": "verifyOneSidedRatio",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sellToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_buyToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_sellAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_buyAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_slippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "contract IPriceOracle",
+        "name": "_priceOracle",
+        "type": "IPriceOracle"
+      }
+    ],
+    "name": "verifySwap",
+    "outputs": [],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
