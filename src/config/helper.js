@@ -117,6 +117,8 @@ async function getDepositAmounts(
 ) {
   const numTokens = tokens.length;
   const totalSupply = await portfolio.totalSupply();
+
+  console.log("in getDepositAmounts totalSupply", totalSupply);
   let splitAmounts = [];
 
   // Get vault address
@@ -166,6 +168,9 @@ async function getDepositAmounts(
           amountCalculationsAddress,
           "10000" // 100% in 1e18 precision
         );
+
+        console.log("in getDepositAmounts token0Amount", token0Amount);
+        console.log("in getDepositAmounts token1Amount", token1Amount);
         const positionWrapper = new ethers.Contract(
           token,
           POSITION_WRAPPER_ABI,
@@ -178,11 +183,13 @@ async function getDepositAmounts(
           priceOracleAddress,
           token0Amount.toString()
         );
+        console.log("in getDepositAmounts usd0", usd0);
         const usd1 = await getTokenUsdValue(
           token1,
           priceOracleAddress,
           token1Amount.toString()
         );
+        console.log("in getDepositAmounts usd1", usd1);
         const usdSum = usd0.add(usd1);
         usdBalances.push(usdSum);
         totalUsd = totalUsd.add(usdSum);
@@ -211,6 +218,7 @@ async function getDepositAmounts(
         const underlyingAmount = bal
           .mul(exchangeRateMantissa)
           .div(ethers.BigNumber.from(10).pow(18));
+        console.log("in getDepositAmounts underlyingAmount", underlyingAmount);
         let underlying;
         if (token == "0xA07c5b74C9B40447a954e1466938b865b6BBea36") {
           underlying = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
@@ -222,7 +230,7 @@ async function getDepositAmounts(
           priceOracleAddress,
           underlyingAmount.toString()
         );
-
+        console.log("in getDepositAmounts usd", usd);
         usdBalances.push(usd);
         totalUsd = totalUsd.add(usd);
 
@@ -233,11 +241,13 @@ async function getDepositAmounts(
         // Regular token
         const erc20 = new ethers.Contract(token, ERC20_ABI, provider);
         const bal = await erc20.balanceOf(vaultAddress);
+        console.log("in getDepositAmounts bal", bal, token);
         const usd = await getTokenUsdValue(
           token,
           priceOracleAddress,
           bal.toString()
         );
+        console.log("in getDepositAmounts usd", usd);
         usdBalances.push(usd);
         totalUsd = totalUsd.add(usd);
       }
@@ -263,6 +273,8 @@ async function getDepositAmounts(
       BigNumber.from(0)
     );
 
+    console.log("in getDepositAmounts totalAdjustedValue", totalAdjustedValue);
+
     if (totalAdjustedValue.eq(0)) {
       // fallback to equal split if all USD values are zero
       splitAmounts = splitEqually(BigNumber.from(depositAmount), numTokens);
@@ -275,6 +287,8 @@ async function getDepositAmounts(
       }
     }
   }
+
+  console.log("in getDepositAmounts splitAmounts", splitAmounts);
 
   // Now, for each token, if it's an external position, split its amount into underlying tokens by getCurrentRatio
   let finalTokens = [];
@@ -365,28 +379,30 @@ export async function createDepositBatchDataWithEnso(
   console.log("*****************step 2 done*********************");
   console.log("swapTokens", reinvestmentSwapInfo.swapTokens);
   console.log("finalAmounts", finalAmounts);
-  const swapTokens = [];
-  const swapAmounts = [];
-  const isExternalPosition = [];
-  const portfolioTokenIndex = [];
-  for(let i = 0; i < reinvestmentSwapInfo.swapTokens.length; i++){
-    if(finalAmounts[i] > 0){
-      swapTokens.push(reinvestmentSwapInfo.swapTokens[i]);
-      swapAmounts.push(finalAmounts[i]);
-      isExternalPosition.push(reinvestmentSwapInfo.isExternalPosition[i]);
-      portfolioTokenIndex.push(reinvestmentSwapInfo.portfolioTokenIndex[i]);
-    }
-  }
-  reinvestmentSwapInfo.swapTokens = swapTokens;
-  reinvestmentSwapInfo.isExternalPosition = isExternalPosition;
-  reinvestmentSwapInfo.portfolioTokenIndex = portfolioTokenIndex;
+  console.log("swapTokens", reinvestmentSwapInfo.swapTokens);
+  // const swapTokens = [];
+  // const swapAmounts = [];
+  // const isExternalPosition = [];
+  // const portfolioTokenIndex = [];
+  // for(let i = 0; i < reinvestmentSwapInfo.swapTokens.length; i++){
+  //   if(finalAmounts[i] > 0){
+  //     swapTokens.push(reinvestmentSwapInfo.swapTokens[i]);
+  //     swapAmounts.push(finalAmounts[i]);
+  //     isExternalPosition.push(reinvestmentSwapInfo.isExternalPosition[i]);
+  //     portfolioTokenIndex.push(reinvestmentSwapInfo.portfolioTokenIndex[i]);
+  //   }
+  // }
+  // reinvestmentSwapInfo.swapTokens = swapTokens;
+  // reinvestmentSwapInfo.isExternalPosition = isExternalPosition;
+  // reinvestmentSwapInfo.portfolioTokenIndex = portfolioTokenIndex;
 
   let ensoCalldata = await createEnsoCalldataDeposit(
     depositBatchAddress,
     depositToken,
-    swapTokens,
-    swapAmounts
+    reinvestmentSwapInfo.swapTokens,
+    finalAmounts
   );
+
 
   return { reinvestmentSwapInfo, ensoCalldata };
 }
@@ -401,17 +417,29 @@ export async function createEnsoCalldataDeposit(
   for (let i = 0; i < swapTokens.length; i++) {
     if (swapTokens[i] == depositToken) {
       const abiCoder = ethers.utils.defaultAbiCoder;
-      const encodedata = abiCoder.encode(["uint"], [depositAmounts[i]]);
-      postResponse.push(encodedata);
+      if(depositAmounts[i] > 0){
+        const encodedata = abiCoder.encode(["uint"], [depositAmounts[i]]);
+        postResponse.push(encodedata);
+      }
+      else{
+        postResponse.push([]);
+      }
     } else {
-      let response = await createEnsoCallDataRoute(
-        depositBatchAddress,
-        depositBatchAddress,
-        depositToken,
-        swapTokens[i],
-        depositAmounts[i]
-      );
-      postResponse.push(response.data.tx.data);
+      console.log("depositAmounts[i]", depositAmounts[i]);
+      if (depositAmounts[i] > 0) {
+        let response = await createEnsoCallDataRoute(
+          depositBatchAddress,
+          depositBatchAddress,
+          depositToken,
+          swapTokens[i],
+          depositAmounts[i]
+        );
+        console.log("response", response.data);
+        postResponse.push(response.data.tx.data);
+      }
+      else {
+        postResponse.push([]);
+      }
     }
   }
 
@@ -467,7 +495,9 @@ export async function getWithdrawBatchData(
     thenaPoolInfo,
     flashLoanProtocolToken,
     bufferUnit,
-    flashloanBufferUnit
+    flashloanBufferUnit,
+    encodedParameters,
+    encodedParameters1
   } = await getFlashLoanData(
     portfolioAddress,
     tokenBalanceLibraryAddress,
@@ -535,7 +565,9 @@ export async function getWithdrawBatchData(
     thenaPoolInfo,
     flashLoanProtocolToken,
     bufferUnit,
-    flashloanBufferUnit
+    flashloanBufferUnit,
+    encodedParameters,
+    encodedParameters1
   };
 }
 
@@ -674,7 +706,7 @@ export async function getFlashLoanData(
   console.log("Factory:", thenaPoolInfo._factory);
 
 
-  let flashloanBufferUnit =25; //Flashloan buffer unit in 1/10000, extra flashlaon to take, to fulfil the swap(from flashlaon to debt token)
+  let flashloanBufferUnit = 25; //Flashloan buffer unit in 1/10000, extra flashlaon to take, to fulfil the swap(from flashlaon to debt token)
   let bufferUnit = 280; //Buffer unit for collateral amount in 1/100000, extra collateral to take, to fulfil the swap(from collateral underlying to flashlaon token)
 
   const portfolioCalculations = new ethers.Contract(
@@ -732,10 +764,39 @@ export async function getFlashLoanData(
       "1000", // Need to fetch from thena pool
       bufferUnit
     );
+  let encodedParameters = [];
+  let encodedParameters1 = [];
+
+  const underlyings = values[2];
 
   if (values[3].length != 0) {
     if (values[3].length > 1) {
       flashLoanAmounts.push(values[1]);
+      for (let i = 0; i < flashLencodedParameters1oanAmounts.length; i++) {
+        console.log("underlyings token", underlyings[i]);
+        if (flashLoanToken != underlyings[i]) {
+          const postResponse = await createEnsoCallDataRoute(
+            ensoHandler.address,
+            ensoHandler.address,
+            flashLoanToken,
+            underlyings[i],
+            flashLoanAmounts[i].toString()
+          );
+          encodedParameters.push(
+            ethers.utils.defaultAbiCoder.encode(
+              ["bytes[]", "address[]", "uint256[]"],
+              [[postResponse.data.tx.data], [underlyings[i]], [0]]
+            )
+          );
+        } else {
+          encodedParameters.push(
+            ethers.utils.defaultAbiCoder.encode(
+              ["bytes[]", "address[]", "uint256[]"],
+              [["0x"], [underlyings[i]], [0]]
+            )
+          );
+        }
+      }
     } else {
       let borrowedToken = values[3][0]; // In vToken format
       console.log("borrowedToken:", borrowedToken.toString());
@@ -750,6 +811,23 @@ export async function getFlashLoanData(
         .div(await portfolio.totalSupply());
       flashLoanAmounts.push([borrowed.toString()]);
     }
+  }
+
+  for (let j = 0; j < lendTokens.length; j++) {
+    const postResponse1 = await createEnsoCallDataRoute(
+      ensoHandler.address,
+      ensoHandler.address,
+      lendTokens[j],
+      flashLoanToken,
+      amountToSell[j].toString() //Need calculation here
+    );
+
+    encodedParameters1.push(
+      ethers.utils.defaultAbiCoder.encode(
+        ["bytes[]", "address[]", "uint256[]"],
+        [[postResponse1.data.tx.data], [flashLoanToken], [0]]
+      )
+    );
   }
 
   console.log("flashLoanAmounts:", flashLoanAmounts);
@@ -768,7 +846,9 @@ export async function getFlashLoanData(
     thenaPoolInfo,
     flashLoanProtocolToken,
     bufferUnit,
-    flashloanBufferUnit
+    flashloanBufferUnit,
+    encodedParameters,
+    encodedParameters1
   };
 }
 
@@ -1207,6 +1287,8 @@ export async function getCurrentRatio(
       await positionWrapper.initialTickUpper()
     );
 
+  console.log("amounts from getCurrentRatio", amounts);
+
   // Convert amount0, amount1 to USD (here we use stable coins for testing so we can skip)
   let amount0USD = await getTokenUsdValue(
     await positionWrapper.token0(),
@@ -1271,6 +1353,8 @@ export async function getExternalPositionData(
 
   let positionManagerAddress =
     await assetManagementConfig.lastDeployedPositionManager();
+
+  console.log("positionManagerAddress", positionManagerAddress);
 
   if (positionManagerAddress != undefined) {
     const positionManager = new ethers.Contract(
@@ -2040,7 +2124,7 @@ export async function createEncodedParametersDecreaseLiquidityWithSwap(
   // Prepare swap data for underlying tokens to target token
   let callDataEnso = [[]];
 
-  if(withdrawAmounts.token0Amount.gt(0) && token0 !== buyToken) {
+  if (withdrawAmounts.token0Amount.gt(0) && token0 !== buyToken) {
 
     console.log("token0", token0);
     let swapAmount = withdrawAmounts.token0Amount.toString();
@@ -2143,17 +2227,17 @@ export async function getEncodedDataForPositionLiquidityIncrease(
   const token0 = await positionWrapper.token0();
   const token1 = await positionWrapper.token1();
 
-  let sellTokenBalance0 =  BigNumber.from(token0Amount);
-  let sellTokenBalance1 =  BigNumber.from(token1Amount);
+  let sellTokenBalance0 = BigNumber.from(token0Amount);
+  let sellTokenBalance1 = BigNumber.from(token1Amount);
 
   // Get position manager address
   const positionManagerAddress = await positionWrapper.parentPositionManager();
-  
-  
+
+
   // Encode approval function
   let ABIApprove = ["function approve(address spender, uint256 amount)"];
   let abiEncodeApprove = new ethers.utils.Interface(ABIApprove);
-  
+
   // Get sell token balances
 
 
@@ -2258,7 +2342,7 @@ export async function getEncodedDataForPositionLiquidityIncrease(
   console.log("positionManagerAddress", positionManagerAddress);
   increaseLiquidityTarget[0].push(positionManagerAddress);
 
-  
+
   // Encode the final parameters
   const encodedParameters = ethers.utils.defaultAbiCoder.encode(
     [
@@ -2277,12 +2361,12 @@ export async function getEncodedDataForPositionLiquidityIncrease(
       callDataIncreaseLiquidity,
       increaseLiquidityTarget,
       [],
-      [[token0,token1]],
-      [[position]], 
+      [[token0, token1]],
+      [[position]],
       [[0]],
     ]
   );
-  
+
   return encodedParameters;
 }
 
@@ -2303,11 +2387,11 @@ export async function getTokenAmountOut(
 
   const ratio = await amountCalculationsAlgebra.callStatic.getRatio(position);
   console.log("ratio", ratio);
-  if(isToken0) {
-    const amountOut =  BigNumber.from(amount).mul(ratio).div(multiplier);
+  if (isToken0) {
+    const amountOut = BigNumber.from(amount).mul(ratio).div(multiplier);
     return amountOut;
   } else {
-    const amountOut =  BigNumber.from(amount).mul(multiplier).div(ratio);
+    const amountOut = BigNumber.from(amount).mul(multiplier).div(ratio);
     return amountOut;
   }
 }
@@ -2376,12 +2460,20 @@ export async function getEncodedDataForPositionLiquidityDecrease(
 
   // Prepare underlying tokens array
   const underlyingTokens = [];
+  const upadteTokens = []
+  const minExpectedOutputAmounts = []
   if (withdrawAmounts.token0Amount.gt(0)) {
     underlyingTokens.push(token0);
+    upadteTokens.push(token0);
+    minExpectedOutputAmounts.push(0);
   }
   if (withdrawAmounts.token1Amount.gt(0)) {
     underlyingTokens.push(token1);
+    upadteTokens.push(token1);
+    minExpectedOutputAmounts.push(0);
   }
+
+
 
   const encodedParameters = ethers.utils.defaultAbiCoder.encode(
     [
@@ -2401,13 +2493,13 @@ export async function getEncodedDataForPositionLiquidityDecrease(
       [[]], // Empty increaseLiquidityTarget
       underlyingTokens, // Underlying tokens from the position
       [[position]], // tokensIn - the position being sold
-      [[token0,token1]], // tokensOut - underlying tokens being received
-      [[0,0]], // minExpectedOutputAmounts
+      [upadteTokens], // tokensOut - underlying tokens being received
+      [minExpectedOutputAmounts], // minExpectedOutputAmounts
     ]
   );
 
   return encodedParameters;
-} 
+}
 
 export async function calculateSwapAmountUpdateRange(
   positionManagerAddress,
