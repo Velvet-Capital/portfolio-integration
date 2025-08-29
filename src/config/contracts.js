@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 // Contract Addresses
-export const PORTFOLIO_FACTORY_ADDRESS = "0xBB5c5929dC2322e5F93EE23648df9eaEa9918E0D"
+export const PORTFOLIO_FACTORY_ADDRESS = "0xb5556752fCb30703a78AD2f24b0Db73f314Ec48A"
 export const TREASURY_ADDRESS = "0x04d740D2D93AF7417060Ec7b35415c81820470d0"
 
 // Protocol Configuration
@@ -9842,7 +9842,7 @@ export const swapVerificationLibraryAddress = "0x60c29EF13b2629fD0B5aB36410401D8
 
 export const withdrawBatchAddress="0x24e2d3217ebCFf91a0Cb5556c666bEBd42432125"
 
-export const withdrawManagerAddress="0xA857538e9b56F4a69C29285c5893A5cDDCeB941e"
+export const withdrawManagerAddress="0xe4F03fB7C7690935BD04D103b22afd49067B5c5a"
 
 export const WITHDRAW_MANAGER_ABI= [
   {
