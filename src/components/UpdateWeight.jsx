@@ -390,14 +390,29 @@ const UpdateWeight = ({ portfolio }) => {
 
                 const buyToken0 = buyTokens[0];
                 const buyToken1 = buyTokens[1];
+                const {token0Amount, token1Amount} = await calculateOutputAmounts(sellToken, AMOUNT_CALCULATIONS_ALGEBRA_ADDRESS, rebalancePercentage)
 
                 let tokens = await portfolioContract.getTokens();
                 if(rebalancePercentage == 100){
                     newTokens = tokens.filter(token => token !== sellToken);
-                    newTokens = [...newTokens, buyToken0, buyToken1]
+                    if(token0Amount.gt(0)){ 
+                        console.log("token0Amount", token0Amount);
+                        newTokens = [...newTokens, buyToken0]
+                    }
+                    if(token1Amount.gt(0)){ 
+                        console.log("token1Amount", token1Amount);
+                        newTokens = [...newTokens, buyToken1]
+                    }
                 } else {
-                    newTokens = [...tokens, buyToken0, buyToken1]
+                    if(token0Amount.gt(0)){ 
+                        newTokens = [...tokens, buyToken0]
+                    }
+                    if(token1Amount.gt(0)){ 
+                        newTokens = [...tokens, buyToken1]
+                    }
                 }
+
+                console.log("newTokens", newTokens);
 
                 const vault = await portfolioContract.vault();
 

@@ -156,7 +156,9 @@ const WithdrawWBNB = ({ portfolio }) => {
         thenaPoolInfo,
         flashLoanProtocolToken,
         bufferUnit,
-        flashloanBufferUnit
+        flashloanBufferUnit,
+        encodedParameters,
+        encodedParameters1
       } = await getWithdrawBatchData(
         priceOracleAddress,
         tokenBalanceLibraryAddress, // tokenBalanceLibraryAddress
@@ -210,8 +212,8 @@ const WithdrawWBNB = ({ portfolio }) => {
           _bufferUnit: "300",
           _solverHandler: ensoHandlerAddress,
           _flashLoanAmount: flashLoanAmounts,
-          firstSwapData: [["0x"]],
-          secondSwapData: [["0x"]],
+          firstSwapData: [encodedParameters],
+          secondSwapData: [encodedParameters1],
           _swapHandler: swapHandlerV3,
           _poolFees: poolFees.poolFees,
           isDexRepayment: true,
