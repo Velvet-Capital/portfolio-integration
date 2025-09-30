@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMetaMask } from '../contexts/MetaMaskContext';
 import { ethers } from 'ethers';
-import { 
+import {
     THENA_PROTOCOL_HASH,
     ZERO_ADDRESS,
     API_URL,
@@ -40,7 +40,7 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
 
     const fetchPositions = async () => {
         if (!portfolioAddress) return;
-        
+
         try {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
@@ -59,7 +59,7 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
             );
 
             const positionManagerAddress = await assetManagementConfig.lastDeployedPositionManager();
-            
+
             if (positionManagerAddress && positionManagerAddress !== ZERO_ADDRESS) {
                 const positionManager = new ethers.Contract(
                     positionManagerAddress,
@@ -160,7 +160,10 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
                 formData.name || "BNB/ETH Position",
                 formData.symbol || "BNB/ETH",
                 formData.minTick || "-144180",
-                formData.maxTick || "122100"
+                formData.maxTick || "122100",
+                {
+                    gasLimit: 2000000,
+                }
             );
 
             console.log("Waiting for position creation transaction...");
@@ -186,16 +189,16 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
                 };
 
                 setCreatedPosition(newPosition);
-                
+
                 // Update the positions list
                 setPositions(prev => [...prev, newPosition]);
-                
+
                 console.log("Newly created position:", newPosition);
             }
 
             setSuccess(true);
             setNotification('Position created successfully!');
-            
+
             // Reset form
             setFormData({
                 token1: '',
@@ -234,7 +237,7 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
     return (
         <div className="create-position">
             <h3>Create Position</h3>
-            
+
             {/* Display existing positions */}
             {positions.length > 0 && (
                 <div className="existing-positions">
@@ -335,7 +338,7 @@ const CreatePosition = ({ portfolioAddress, loadPortfolio }) => {
                         Connect Wallet
                     </button>
                 ) : (
-                    <button 
+                    <button
                         onClick={createPosition}
                         disabled={loading}
                         className="create-position-button"
