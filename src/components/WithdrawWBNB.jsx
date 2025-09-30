@@ -169,7 +169,8 @@ const WithdrawWBNB = ({ portfolio }) => {
         tokenToSwapInto,
         withdrawalAmount.toString(), // portfolioTokenWithdrawAmount
         withdrawBatchAddress, // withdrawBatchAddress
-        await signer.getAddress()
+        await signer.getAddress(),
+        ensoHandlerAddress
       );
 
       console.log("FINAL TX DATA");

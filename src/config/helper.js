@@ -458,7 +458,8 @@ export async function getWithdrawBatchData(
   withdrawalToken,
   portfolioTokenWithdrawAmount,
   withdrawBatchAddress,
-  userAddress
+  userAddress,
+  ensoHandlerAddress
 ) {
   let reinvestmentSwapInfo = await getExternalPositionData(
     portfolioAddress,
@@ -505,7 +506,8 @@ export async function getWithdrawBatchData(
     amountCalculationsAddress,
     portfolioCalculationsAddress,
     userAddress,
-    portfolioTokenWithdrawAmount
+    portfolioTokenWithdrawAmount,
+    ensoHandlerAddress
   );
   const portfolio = new ethers.Contract(
     portfolioAddress,
@@ -599,7 +601,8 @@ export async function getFlashLoanData(
   amountCalculationsAddress,
   portfolioCalculationsAddress,
   userAddress,
-  portfolioTokenWithdrawAmount
+  portfolioTokenWithdrawAmount,
+  ensoHandlerAddress
 ) {
   const addresses = chainIdToAddresses[56];
 
@@ -776,8 +779,8 @@ export async function getFlashLoanData(
         console.log("underlyings token", underlyings[i]);
         if (flashLoanToken != underlyings[i]) {
           const postResponse = await createEnsoCallDataRoute(
-            ensoHandler.address,
-            ensoHandler.address,
+            ensoHandlerAddress,
+            ensoHandlerAddress,
             flashLoanToken,
             underlyings[i],
             flashLoanAmounts[i].toString()
@@ -815,8 +818,8 @@ export async function getFlashLoanData(
 
   for (let j = 0; j < lendTokens.length; j++) {
     const postResponse1 = await createEnsoCallDataRoute(
-      ensoHandler.address,
-      ensoHandler.address,
+      ensoHandlerAddress,
+      ensoHandlerAddress,
       lendTokens[j],
       flashLoanToken,
       amountToSell[j].toString() //Need calculation here
@@ -881,7 +884,7 @@ export async function getSwapAmountsForExternalPosition(
   amountCalculationsAddress,
   isTokenExternalPosition,
   positionWrappers,
-  withdrawalAmounts
+  withdrawalAmounts,
 ) {
   const portfolio = new ethers.Contract(
     portfolioAddress,
