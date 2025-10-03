@@ -281,6 +281,36 @@ const CreatePortfolio = () => {
 
   const savePortfolioToDatabase = async (portfolioInfo, params) => {
     try {
+      console.log("portfolioInfo::savePortfolioToDatabase", {
+        userAddress: account.toLowerCase(),
+        portfolioAddress: portfolioInfo.portfolio,
+        portfolioId: Number(params.portfolioId),
+        name: params.name,
+        symbol: params.symbol,
+        owner: params.owner,
+        accessController: params.accessController,
+        isPublicPortfolio: params.isPublicPortfolio,
+        managementFee: params._managementFee / 100, // Convert back from basis points
+        performanceFee: params._performanceFee / 100,
+        entryFee: params._entryFee / 100,
+        exitFee: params._exitFee / 100,
+        initialAmount: ethers.utils.formatEther(params._initialPortfolioAmount),
+        minHolding: ethers.utils.formatEther(params._minPortfolioTokenHoldingAmount),
+        isPublic: params._public,
+        isTransferable: params._transferable,
+        isTransferableToPublic: params._transferableToPublic,
+        whitelistTokens: params._whitelistTokens,
+        whitelistedProtocolIds: params._witelistedProtocolIds,
+        // Add all the module addresses
+        tokenExclusionManager: portfolioInfo.tokenExclusionManager,
+        rebalancing: portfolioInfo.rebalancing,
+        owner: portfolioInfo.owner,
+        borrowManager: portfolioInfo.borrowManager,
+        assetManagementConfig: portfolioInfo.assetManagementConfig,
+        feeModule: portfolioInfo.feeModule,
+        vaultAddress: portfolioInfo.vaultAddress,
+        gnosisModule: portfolioInfo.gnosisModule
+      });
       const response = await fetch(`${API_URL}/portfolios`, {
         method: 'POST',
         headers: {
